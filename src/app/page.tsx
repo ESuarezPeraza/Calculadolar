@@ -148,7 +148,7 @@ export default function Home() {
     { label: "7", action: () => handleNumberPress("7") },
     { label: "8", action: () => handleNumberPress("8") },
     { label: "9", action: () => handleNumberPress("9") },
-    { label: "Historial", action: () => { /* TODO */ }, variant: "custom" as const, customColor: "#919191", icon: <History size={28} className="text-black" /> },
+    { label: "", action: () => { /* TODO: History */ }, variant: "custom" as const, customColor: "#919191", icon: <History size={28} className="text-black" /> },
     { label: "4", action: () => handleNumberPress("4") },
     { label: "5", action: () => handleNumberPress("5") },
     { label: "6", action: () => handleNumberPress("6") },
@@ -273,4 +273,5 @@ export default function Home() {
       </div>
     </main>
   );
-}
+
+    
