@@ -104,6 +104,10 @@ export default function Home() {
     if (inputValue.replace(",", "").length >= 15) return;
     setInputValue((prev) => (prev === "0" ? num : prev + num));
   };
+  
+  const handleBackspace = () => {
+    setInputValue((prev) => (prev.length > 1 ? prev.slice(0, -1) : "0"));
+  };
 
   const handleDecimalPress = () => {
     if (inputValue.includes(".")) return;
@@ -168,6 +172,19 @@ export default function Home() {
       </div>
   );
 
+  const CurrencyButton = ({ active, label, children, onClick }: {active: boolean, label: string, children: React.ReactNode, onClick: () => void}) => (
+    <div className="flex flex-col items-center gap-2">
+      <Button 
+        onClick={onClick} 
+        variant={active ? 'primary' : 'outline'} 
+        className={cn("rounded-full h-12 w-12 p-0 text-lg font-bold", active ? "bg-primary" : "border-primary text-primary")}
+      >
+        {children}
+      </Button>
+      <span className="text-xs font-semibold text-muted-foreground">{label}</span>
+    </div>
+  );
+
   return (
     <main className="h-screen max-h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden font-sans">
       <div className="flex-1 flex flex-col justify-end p-6 space-y-4">
@@ -190,31 +207,29 @@ export default function Home() {
 
       <div className="px-6 py-4 space-y-3">
           <div className="flex justify-between items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                  <Button onClick={() => handleCurrencyButtonClick("USD")} variant={foreignCurrency === 'USD' && !isCustomRateActive ? 'primary' : 'outline'} className={cn("rounded-full h-12 w-12 p-0", foreignCurrency === 'USD' && !isCustomRateActive ? "bg-primary" : "border-primary text-primary")}>
-                      <span className="text-lg font-bold">$</span>
-                  </Button>
-                  <Button onClick={() => handleCurrencyButtonClick("EUR")} variant={foreignCurrency === 'EUR' && !isCustomRateActive ? 'primary' : 'outline'} className={cn("rounded-full h-12 w-12 p-0", foreignCurrency === 'EUR' && !isCustomRateActive ? "bg-primary" : "border-primary text-primary")}>
-                      <span className="text-lg font-bold">€</span>
-                  </Button>
-                  <Button onClick={() => setIsCustomRateActive(true)} variant={isCustomRateActive ? 'primary' : 'outline'} className={cn("rounded-full h-12 w-12 p-0", isCustomRateActive ? "bg-primary" : "border-primary text-primary")}>
+              <div className="flex items-center space-x-4">
+                  <CurrencyButton onClick={() => handleCurrencyButtonClick("USD")} active={foreignCurrency === 'USD' && !isCustomRateActive} label="USD">
+                      $
+                  </CurrencyButton>
+                   <CurrencyButton onClick={() => handleCurrencyButtonClick("EUR")} active={foreignCurrency === 'EUR' && !isCustomRateActive} label="EUR">
+                      €
+                  </CurrencyButton>
+                  <CurrencyButton onClick={() => setIsCustomRateActive(true)} active={isCustomRateActive} label="CUSTOM">
                       <Pencil size={20} />
-                  </Button>
+                  </CurrencyButton>
               </div>
-              <div className="flex-1 relative">
-                {isCustomRateActive && (
+              <div className="flex-1 relative flex justify-end">
+                {isCustomRateActive ? (
                   <>
                   <Input
                     type="text"
-                    placeholder={`Tasa Custom`}
+                    placeholder={`Tasa`}
                     value={customRate}
                     onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^[\d,.]*$/.test(value)) {
-                        setCustomRate(value);
-                      }
+                      const value = e.target.value.replace(/[^0-9,.]/g, '');
+                      setCustomRate(value);
                     }}
-                    className="bg-transparent border-0 border-b rounded-none px-0 text-lg text-right focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground"
+                    className="bg-transparent border-0 border-b-2 border-primary rounded-none px-0 text-lg text-right focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground w-24"
                   />
                   {customRate && (
                      <Button onClick={() => setCustomRate("")} variant="ghost" size="icon" className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground">
@@ -222,6 +237,10 @@ export default function Home() {
                      </Button>
                   )}
                   </>
+                ) : (
+                  <Button onClick={handleBackspace} variant="outline" className="rounded-full h-12 w-12 p-0 border-primary text-primary">
+                    <Delete size={24} />
+                  </Button>
                 )}
               </div>
           </div>
