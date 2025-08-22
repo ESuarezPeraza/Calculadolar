@@ -238,7 +238,7 @@ export default function Home() {
                   )}
                   </>
                 ) : (
-                  <Button onClick={handleBackspace} variant="outline" className="rounded-full h-12 w-12 p-0 border-primary text-primary">
+                  <Button onClick={handleBackspace} variant="ghost" size="icon" className="text-primary h-12 w-12">
                     <Delete size={24} />
                   </Button>
                 )}
