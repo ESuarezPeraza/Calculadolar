@@ -261,6 +261,7 @@ export default function Home() {
               btn.variant === 'accent' && 'bg-accent text-accent-foreground hover:bg-accent/90',
               !btn.variant && 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             )}
+            size={btn.label === 'C' || typeof btn.label !== 'string' ? 'icon' : 'default'}
           >
             {btn.label}
           </Button>
