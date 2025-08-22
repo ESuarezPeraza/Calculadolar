@@ -148,7 +148,7 @@ export default function Home() {
     { label: "7", action: () => handleNumberPress("7") },
     { label: "8", action: () => handleNumberPress("8") },
     { label: "9", action: () => handleNumberPress("9") },
-    { label: <History size={28} />, action: () => { /* TODO */ }, variant: "accent" as const },
+    { label: "Historial", action: () => { /* TODO */ }, variant: "custom" as const, customColor: "#919191", icon: <History size={28} className="text-black" /> },
     { label: "4", action: () => handleNumberPress("4") },
     { label: "5", action: () => handleNumberPress("5") },
     { label: "6", action: () => handleNumberPress("6") },
@@ -259,11 +259,15 @@ export default function Home() {
               btn.variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90',
               btn.variant === 'destructive' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
               btn.variant === 'accent' && 'bg-accent text-accent-foreground hover:bg-accent/90',
+              btn.variant === 'custom' && 'flex-col text-xs',
               !btn.variant && 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             )}
-            size={btn.label === 'C' || typeof btn.label !== 'string' ? 'icon' : 'default'}
+            style={btn.variant === 'custom' ? { backgroundColor: btn.customColor } : {}}
+            size={'icon'}
           >
-            {btn.label}
+            {btn.variant === 'custom' ? btn.icon : null}
+            {typeof btn.label === 'string' && btn.label}
+            {typeof btn.label !== 'string' && btn.variant !== 'custom' ? btn.label : null}
           </Button>
         ))}
       </div>
