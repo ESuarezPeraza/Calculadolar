@@ -239,7 +239,7 @@ export default function Home() {
                   </>
                 ) : (
                   <Button onClick={handleBackspace} variant="ghost" size="icon" className="text-primary h-12 w-12">
-                    <Delete size={32} />
+                    <Delete size={40} />
                   </Button>
                 )}
               </div>
