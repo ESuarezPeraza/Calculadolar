@@ -156,7 +156,7 @@ export default function Home() {
     { label: "1", action: () => handleNumberPress("1") },
     { label: "2", action: () => handleNumberPress("2") },
     { label: "3", action: () => handleNumberPress("3") },
-    { label: <Plus size={28} />, action: () => { /* TODO */ }, variant: "accent" as const },
+    { label: "", action: () => { /* TODO */ }, variant: "custom" as const, customColor: "#919191", icon: <Plus size={28} className="text-black" /> },
     { label: "C", action: handleClear, variant: "destructive" as const },
     { label: "0", action: () => handleNumberPress("0") },
     { label: ",", action: handleDecimalPress },
@@ -238,8 +238,8 @@ export default function Home() {
                   )}
                   </>
                 ) : (
-                  <Button onClick={handleBackspace} variant="ghost" size="icon" className="text-primary h-12 w-12">
-                    <Delete size={32} />
+                  <Button onClick={handleBackspace} variant="ghost" size="icon" className="h-12 w-12 text-primary/50 hover:text-primary">
+                    <Delete size={40} strokeWidth={1.5} />
                   </Button>
                 )}
               </div>
