@@ -197,8 +197,8 @@ export default function Home() {
     if(state.currentOperand === '0' && state.expression === '') return;
 
     const newExpression = state.expression 
-        ? `${state.expression} ${operation} ${state.currentOperand}`
-        : `${state.currentOperand}`;
+        ? `${state.expression} ${state.currentOperand} ${operation}`
+        : `${state.currentOperand} ${operation}`;
 
     setState(s => ({
       ...s,
@@ -208,11 +208,11 @@ export default function Home() {
   };
   
   const handleEquals = () => {
-    if (!state.expression && state.currentOperand === "0") {
+    if (!state.expression) {
         return;
     }
 
-    const finalExpression = state.expression ? `${state.expression} + ${state.currentOperand}` : state.currentOperand;
+    const finalExpression = `${state.expression} ${state.currentOperand}`;
     const result = evaluate(finalExpression);
     const resultStr = isNaN(result) ? "0" : result.toString().replace('.', ',');
     
@@ -255,15 +255,15 @@ export default function Home() {
   const MainDisplay = ({ currency, amount }: { currency: string; amount: string | number;}) => (
       <div className="flex justify-between items-baseline">
           <div className="flex items-center gap-3">
-              <span className="font-bold text-2xl">{currencySymbols[currency as Currency]}</span>
+              <span className="font-bold text-xl">{currencySymbols[currency as Currency]}</span>
           </div>
-          <p className="font-sans font-normal text-4xl text-right break-all">{formatDisplayValue(amount)}</p>
+          <p className="font-sans font-normal text-3xl text-right break-all">{formatDisplayValue(amount)}</p>
       </div>
   );
   
   const ExpressionDisplay = ({ expression }: { expression: string }) => (
-      <div className="flex justify-end items-baseline min-h-[1.5rem]">
-          <p className="font-sans font-normal text-lg text-right break-all text-muted-foreground truncate">
+      <div className="flex justify-end items-baseline min-h-[1.25rem]">
+          <p className="font-sans font-normal text-base text-right break-all text-muted-foreground truncate">
             {expression.replace(/\+/g, ' + ')}
           </p>
       </div>
@@ -271,13 +271,13 @@ export default function Home() {
 
   const ConversionResultDisplay = ({ currency, amount}: { currency: string; amount: string | number}) => (
     <div className="flex items-center justify-between">
-      <div className="flex items-center text-lg gap-2 text-muted-foreground">
+      <div className="flex items-center text-base gap-2 text-muted-foreground">
         <button onClick={handleSwap}>
             <ArrowRightLeft size={16} className="text-primary" />
         </button>
         <span className="font-sans font-semibold">{currencySymbols[currency as Currency]}</span>
       </div>
-      <p className="font-sans font-normal text-2xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
+      <p className="font-sans font-normal text-xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
     </div>
   );
 
@@ -299,8 +299,8 @@ export default function Home() {
   return (
     <main className="h-screen max-h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden font-sans">
       <div className="flex-1 flex flex-col justify-end p-6 space-y-4">
-        <div className="text-sm text-muted-foreground mb-1 text-right capitalize">
-          {isLoading ? <Skeleton className="h-4 w-48 ml-auto" /> : formatRateDate(rates?.date ?? '')}
+        <div className="text-sm text-muted-foreground mb-1 text-left capitalize">
+          {isLoading ? <Skeleton className="h-4 w-48" /> : formatRateDate(rates?.date ?? '')}
         </div>
         <div className="text-sm text-muted-foreground mb-4 text-right">
             {isLoading ? (
@@ -384,5 +384,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
