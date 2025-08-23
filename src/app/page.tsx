@@ -243,15 +243,15 @@ export default function Home() {
   const MainDisplay = ({ currency, amount }: { currency: string; amount: string | number;}) => (
       <div className="flex justify-between items-baseline">
           <div className="flex items-center gap-3">
-              <span className="font-bold text-4xl">{currencySymbols[currency as Currency]}</span>
+              <span className="font-bold text-3xl">{currencySymbols[currency as Currency]}</span>
           </div>
-          <p className="font-sans font-normal text-6xl text-right break-all">{formatDisplayValue(amount)}</p>
+          <p className="font-sans font-normal text-5xl text-right break-all">{formatDisplayValue(amount)}</p>
       </div>
   );
   
   const ExpressionDisplay = ({ expression }: { expression: string }) => (
-      <div className="flex justify-end items-baseline min-h-[2rem]">
-          <p className="font-sans font-normal text-2xl text-right break-all text-muted-foreground truncate">
+      <div className="flex justify-end items-baseline min-h-[1.75rem]">
+          <p className="font-sans font-normal text-xl text-right break-all text-muted-foreground truncate">
             {expression.replace(/\+/g, ' + ')}
           </p>
       </div>
@@ -259,13 +259,13 @@ export default function Home() {
 
   const ConversionResultDisplay = ({ currency, amount}: { currency: string; amount: string | number}) => (
     <div className="flex items-center justify-between">
-      <div className="flex items-center text-2xl gap-2 text-muted-foreground">
+      <div className="flex items-center text-xl gap-2 text-muted-foreground">
         <button onClick={handleSwap}>
-            <ArrowRightLeft size={20} className="text-primary" />
+            <ArrowRightLeft size={18} className="text-primary" />
         </button>
         <span className="font-sans font-semibold">{currencySymbols[currency as Currency]}</span>
       </div>
-      <p className="font-sans font-normal text-4xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
+      <p className="font-sans font-normal text-3xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
     </div>
   );
 
@@ -372,3 +372,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
