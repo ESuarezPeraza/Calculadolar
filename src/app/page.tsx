@@ -69,7 +69,6 @@ const formatRateDate = (dateString: string) => {
       return `${capitalized}, ${parts[1]} ${parts[2]}`;
     }
     
-    // Fallback for different structures
     const finalString = formatted.replace(/ de (\d{4})/, ' $1');
     return finalString.charAt(0).toUpperCase() + finalString.slice(1);
 };
@@ -205,10 +204,10 @@ export default function Home() {
   };
   
   const handleEquals = () => {
-    if (!state.expression) {
+    if (!state.expression && state.currentOperand === "0") {
         return;
     }
-    
+
     const finalExpression = `${state.expression}${state.currentOperand}`;
     const result = evaluate(finalExpression);
     const resultStr = isNaN(result) ? "0" : result.toString().replace('.', ',');
@@ -252,15 +251,15 @@ export default function Home() {
   const MainDisplay = ({ currency, amount }: { currency: string; amount: string | number;}) => (
       <div className="flex justify-between items-baseline">
           <div className="flex items-center gap-3">
-              <span className="font-bold text-4xl">{currencySymbols[currency as Currency]}</span>
+              <span className="font-normal text-4xl">{currencySymbols[currency as Currency]}</span>
           </div>
           <p className="font-sans font-normal text-5xl text-right break-all">{formatDisplayValue(amount)}</p>
       </div>
   );
   
   const ExpressionDisplay = ({ expression }: { expression: string }) => (
-      <div className="flex justify-end items-baseline min-h-[1.25rem]">
-          <p className="font-sans font-normal text-sm text-right break-all text-muted-foreground truncate">
+      <div className="flex justify-end items-baseline min-h-[3rem]">
+          <p className="font-sans font-normal text-xl text-right break-all text-muted-foreground truncate">
             {expression.replace(/\+/g, ' + ')}
           </p>
       </div>
@@ -272,7 +271,7 @@ export default function Home() {
         <button onClick={handleSwap}>
             <ArrowRightLeft size={16} className="text-primary" />
         </button>
-        <span className="font-sans font-semibold text-2xl">{currencySymbols[currency as Currency]}</span>
+        <span className="font-sans font-normal text-2xl">{currencySymbols[currency as Currency]}</span>
       </div>
       <p className="font-sans font-normal text-3xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
     </div>
@@ -283,11 +282,11 @@ export default function Home() {
       <Button 
         onClick={onClick} 
         variant={active ? 'primary' : 'outline'} 
-        className={cn("h-10 w-16 text-lg font-bold rounded-3xl", active ? "bg-primary" : "border-primary text-primary")}
+        className={cn("h-10 w-16 text-lg font-normal rounded-3xl", active ? "bg-primary" : "border-primary text-primary")}
       >
         {children}
       </Button>
-      <span className="text-xs font-semibold text-muted-foreground">{label}</span>
+      <span className="text-xs font-normal text-muted-foreground">{label}</span>
     </div>
   );
   
@@ -307,9 +306,7 @@ export default function Home() {
           </div>
         </div>
         
-        <div className="min-h-[1.25rem]">
-          <ExpressionDisplay expression={state.expression} />
-        </div>
+        <ExpressionDisplay expression={state.expression} />
         
         <MainDisplay currency={fromCurrency} amount={state.currentOperand} />
        
@@ -366,7 +363,7 @@ export default function Home() {
             onClick={btn.action}
             variant={btn.variant || "secondary"}
             className={cn(
-              "h-20 w-20 text-3xl font-medium rounded-full aspect-square justify-self-center",
+              "h-20 w-20 text-3xl font-normal rounded-full aspect-square justify-self-center",
                "focus-visible:ring-primary focus-visible:ring-offset-background",
               btn.variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90',
               btn.variant === 'destructive' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
@@ -383,3 +380,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
