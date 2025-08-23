@@ -89,6 +89,8 @@ export default function Home() {
   const [foreignCurrency, setForeignCurrency] = React.useState<ForeignCurrency>("USD");
   const [isCustomRateActive, setIsCustomRateActive] = React.useState(false);
   const [customRate, setCustomRate] = React.useState("");
+  const [inputValueForConversion, setInputValueForConversion] = React.useState("0");
+
 
   React.useEffect(() => {
     const fetchRates = async () => {
@@ -127,16 +129,20 @@ export default function Home() {
       return;
     }
     const result = direction === "foreign-to-ves" ? parsedInput * activeRate : parsedInput / activeRate;
-    setOutputValue(result.toFixed(2));
+    setOutputValue(formatValue(result.toFixed(2)));
   }, [activeRate, direction]);
 
 
   React.useEffect(() => {
-    if(state.operation === null) {
-      calculateConversion(state.currentOperand);
-    }
-  }, [state.currentOperand, activeRate, direction, fromCurrency, toCurrency, calculateConversion, state.operation]);
+    calculateConversion(inputValueForConversion);
+  }, [inputValueForConversion, activeRate, direction, fromCurrency, toCurrency, calculateConversion]);
   
+  React.useEffect(() => {
+    if (state.operation === null) {
+      setInputValueForConversion(state.currentOperand);
+    }
+  }, [state.currentOperand, state.operation])
+
   const handleNumberPress = (num: string) => {
     if (state.overwrite) {
         setState(s => ({ ...s, currentOperand: num, overwrite: false }));
@@ -150,6 +156,7 @@ export default function Home() {
   const handleBackspace = () => {
     if (state.overwrite) {
         setState({ ...INITIAL_STATE });
+        setInputValueForConversion("0");
         return;
     }
     if (state.currentOperand.length === 1) {
@@ -170,10 +177,12 @@ export default function Home() {
 
   const handleClear = () => {
     setState(INITIAL_STATE);
-    setOutputValue("0");
+    setInputValueForConversion("0");
   };
   
   const handleOperationPress = (operation: string) => {
+     if (state.currentOperand === "0" && state.previousOperand === null) return;
+  
     if (state.previousOperand == null) {
       setState(s => ({
         ...s,
@@ -201,28 +210,17 @@ export default function Home() {
     const result = evaluate(state);
     const resultStr = isNaN(result) ? "0" : result.toString().replace('.', ',');
     
+    setInputValueForConversion(resultStr);
     setState({
       previousOperand: null,
       operation: null,
       currentOperand: resultStr,
       overwrite: true,
     });
-    calculateConversion(resultStr);
   };
 
   const handleSwap = () => {
     setDirection((prev) => (prev === "foreign-to-ves" ? "ves-to-foreign" : "foreign-to-ves"));
-    setState(INITIAL_STATE);
-    const currentOutput = outputValue;
-  
-    let newInputValue = "0";
-    if (currentOutput !== "0") {
-        const num = parseFloat(currentOutput);
-        newInputValue = isNaN(num) ? "0" : num.toString().replace('.', ',');
-    }
-    
-    setState(s => ({...s, currentOperand: newInputValue}));
-    setOutputValue(state.currentOperand.replace(',', '.'));
   };
 
   const handleCurrencyButtonClick = (currency: ForeignCurrency) => {
@@ -249,13 +247,34 @@ export default function Home() {
     { label: <Equal size={28} />, action: handleEquals, variant: "primary" as const },
   ];
 
-  const DisplayRow = ({ currency, amount, isSub = false }: { currency: string; amount: string | number; isSub?: boolean }) => (
-      <div className={cn("flex justify-between items-baseline", isSub && "min-h-[2rem]")}>
+  const MainDisplay = ({ currency, amount }: { currency: string; amount: string | number;}) => (
+      <div className="flex justify-between items-baseline">
           <div className="flex items-center gap-3">
-              <span className={cn("font-bold", isSub ? "text-xl text-muted-foreground" : "text-4xl")}>{currencySymbols[currency as Currency]}</span>
+              <span className="font-bold text-4xl">{currencySymbols[currency as Currency]}</span>
           </div>
-          <p className={cn("font-sans font-normal text-right break-all", isSub ? "text-2xl text-muted-foreground" : "text-6xl")}>{formatDisplayValue(amount)}</p>
+          <p className="font-sans font-normal text-6xl text-right break-all">{formatDisplayValue(amount)}</p>
       </div>
+  );
+  
+  const SubDisplay = ({ currency, amount, operation }: { currency: string; amount: string | number; operation: string | null;}) => (
+      <div className="flex justify-between items-baseline min-h-[2rem]">
+          <div className="flex items-center gap-3">
+              <span className="font-bold text-xl text-muted-foreground">{currencySymbols[currency as Currency]}</span>
+          </div>
+          <p className="font-sans font-normal text-2xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)} {operation}</p>
+      </div>
+  );
+
+  const ConversionResultDisplay = ({ currency, amount}: { currency: string; amount: string | number}) => (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center text-2xl gap-2 text-muted-foreground">
+        <button onClick={handleSwap}>
+            <ArrowRightLeft size={20} className="text-primary" />
+        </button>
+        <span className="font-sans font-semibold">{currencySymbols[currency as Currency]}</span>
+      </div>
+      <p className="font-sans font-normal text-4xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
+    </div>
   );
 
   const CurrencyButton = ({ active, label, children, onClick }: {active: boolean, label: string, children: React.ReactNode, onClick: () => void}) => (
@@ -263,13 +282,16 @@ export default function Home() {
       <Button 
         onClick={onClick} 
         variant={active ? 'primary' : 'outline'} 
-        className={cn("h-10 w-16 text-lg font-bold rounded-3xl", active ? "bg-primary" : "border-primary text-primary")}
+        className={cn("h-10 w-16 text-lg font-bold rounded-full", active ? "bg-primary" : "border-primary text-primary")}
       >
         {children}
       </Button>
       <span className="text-xs font-semibold text-muted-foreground">{label}</span>
     </div>
   );
+  
+  const showSubDisplay = state.previousOperand && state.operation;
+  const isSumResult = state.overwrite && !state.operation;
 
   return (
     <main className="h-screen max-h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden font-sans">
@@ -285,20 +307,12 @@ export default function Home() {
             )}
         </div>
         
-        {state.previousOperand && (
-          <DisplayRow currency={fromCurrency} amount={`${formatDisplayValue(state.previousOperand)} ${state.operation}`} isSub />
-        )}
-        <DisplayRow currency={fromCurrency} amount={state.currentOperand} />
+        {showSubDisplay && !isSumResult && <SubDisplay currency={fromCurrency} amount={state.previousOperand!} operation={state.operation} />}
+        
+        <MainDisplay currency={fromCurrency} amount={state.currentOperand} />
+       
+        <ConversionResultDisplay currency={toCurrency} amount={outputValue} />
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center text-2xl gap-2 text-muted-foreground">
-            <button onClick={handleSwap}>
-                <ArrowRightLeft size={20} className="text-primary" />
-            </button>
-            <span className="font-sans font-semibold">{currencySymbols[toCurrency]}</span>
-          </div>
-          <p className="font-sans font-normal text-4xl text-right break-all text-muted-foreground">{formatDisplayValue(outputValue)}</p>
-        </div>
       </div>
 
       <div className="px-6 py-4 space-y-3">
