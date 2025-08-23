@@ -24,17 +24,21 @@ const formatValue = (value: string | number) => {
   const num = typeof value === "string" ? parseFloat(value.replace(",", ".")) : value;
   if (isNaN(num)) return "0";
   return new Intl.NumberFormat("de-DE", {
-    minimumFractionDigits: num % 1 === 0 ? 0 : 2,
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(num);
 };
 
 const formatDisplayValue = (value: string | number) => {
-  const num = typeof value === 'string' ? parseFloat(value) : value;
-  if (isNaN(num)) return "0";
-    const parts = value.toString().split('.');
-    const integerPart = new Intl.NumberFormat("de-DE").format(parseInt(parts[0]));
-    return parts.length > 1 ? `${integerPart},${parts[1]}` : integerPart;
+  let valueStr = typeof value === 'string' ? value : value.toString();
+  valueStr = valueStr.replace('.', ',');
+
+  const parts = valueStr.split(',');
+  if (parts[0].length > 0) {
+      const integerPart = new Intl.NumberFormat("de-DE").format(parseInt(parts[0].replace(/\./g, ''), 10));
+      return parts.length > 1 ? `${integerPart},${parts[1]}` : integerPart;
+  }
+  return valueStr;
 };
 
 const formatRateDate = (dateString: string) => {
@@ -97,7 +101,7 @@ export default function Home() {
       return;
     }
     const result = direction === "foreign-to-ves" ? parsedInput * activeRate : parsedInput / activeRate;
-    setOutputValue(result.toString());
+    setOutputValue(result.toFixed(2));
   }, [inputValue, activeRate, direction]);
 
   const handleNumberPress = (num: string) => {
@@ -110,8 +114,8 @@ export default function Home() {
   };
 
   const handleDecimalPress = () => {
-    if (inputValue.includes(".")) return;
-    setInputValue((prev) => prev + ".");
+    if (inputValue.includes(",")) return;
+    setInputValue((prev) => prev + ",");
   };
 
   const handleClear = () => {
@@ -127,8 +131,18 @@ export default function Home() {
     setDirection((prev) => (prev === "foreign-to-ves" ? "ves-to-foreign" : "foreign-to-ves"));
     // Swap values
     const currentInput = inputValue;
-    setInputValue(outputValue === "0" ? "0" : formatValue(outputValue).replace(/\./g, '').replace(',', '.'));
-    setOutputValue(currentInput);
+    const currentOutput = outputValue;
+  
+    // The new input will be the old output, formatted for input
+    let newInputValue = "0";
+    if (currentOutput !== "0") {
+        const num = parseFloat(currentOutput);
+        newInputValue = isNaN(num) ? "0" : num.toString().replace('.', ',');
+    }
+    setInputValue(newInputValue);
+  
+    // The new output will be the old input
+    setOutputValue(currentInput.replace(',', '.'));
   };
 
   React.useEffect(() => {
@@ -177,7 +191,7 @@ export default function Home() {
       <Button 
         onClick={onClick} 
         variant={active ? 'primary' : 'outline'} 
-        className={cn("rounded-3xl h-10 w-16 text-lg font-bold", active ? "bg-primary" : "border-primary text-primary")}
+        className={cn("h-10 w-16 text-lg font-bold rounded-2xl", active ? "bg-primary" : "border-primary text-primary")}
       >
         {children}
       </Button>
