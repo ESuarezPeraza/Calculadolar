@@ -13,6 +13,19 @@ import { Separator } from "@/components/ui/separator";
 type ForeignCurrency = "USD" | "EUR";
 type Currency = ForeignCurrency | "VES";
 type Direction = "foreign-to-ves" | "ves-to-foreign";
+type State = {
+  currentOperand: string;
+  previousOperand: string | null;
+  operation: string | null;
+  overwrite: boolean;
+};
+
+const INITIAL_STATE: State = {
+  currentOperand: "0",
+  previousOperand: null,
+  operation: null,
+  overwrite: false,
+};
 
 const currencySymbols: Record<Currency, string> = {
   USD: "$",
@@ -52,12 +65,25 @@ const formatRateDate = (dateString: string) => {
   }).format(date);
 };
 
+function evaluate({ currentOperand, previousOperand, operation }: State): number {
+    const prev = parseFloat(previousOperand?.replace(',', '.') ?? '0');
+    const current = parseFloat(currentOperand.replace(',', '.'));
+    if (isNaN(prev) || isNaN(current)) return NaN;
+    let computation = 0;
+    switch (operation) {
+        case "+":
+            computation = prev + current;
+            break;
+    }
+    return computation;
+}
+
 export default function Home() {
   const { toast } = useToast();
   const [rates, setRates] = React.useState<ExchangeRateData | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  const [inputValue, setInputValue] = React.useState("0");
+  const [state, setState] = React.useState<State>(INITIAL_STATE);
   const [outputValue, setOutputValue] = React.useState("0");
   const [direction, setDirection] = React.useState<Direction>("foreign-to-ves");
   const [foreignCurrency, setForeignCurrency] = React.useState<ForeignCurrency>("USD");
@@ -93,65 +119,111 @@ export default function Home() {
 
   const fromCurrency: Currency = direction === "foreign-to-ves" ? foreignCurrency : "VES";
   const toCurrency: Currency = direction === "foreign-to-ves" ? "VES" : foreignCurrency;
-
-  const calculateConversion = React.useCallback(() => {
-    const parsedInput = parseFloat(inputValue.replace(",", "."));
+  
+  const calculateConversion = React.useCallback((valueToConvert: string) => {
+    const parsedInput = parseFloat(valueToConvert.replace(",", "."));
     if (isNaN(parsedInput) || activeRate === 0) {
       setOutputValue("0");
       return;
     }
     const result = direction === "foreign-to-ves" ? parsedInput * activeRate : parsedInput / activeRate;
     setOutputValue(result.toFixed(2));
-  }, [inputValue, activeRate, direction]);
+  }, [activeRate, direction]);
 
+
+  React.useEffect(() => {
+    if(state.operation === null) {
+      calculateConversion(state.currentOperand);
+    }
+  }, [state.currentOperand, activeRate, direction, fromCurrency, toCurrency, calculateConversion, state.operation]);
+  
   const handleNumberPress = (num: string) => {
-    if (inputValue.replace(",", "").length >= 15) return;
-    setInputValue((prev) => (prev === "0" ? num : prev + num));
+    if (state.overwrite) {
+        setState(s => ({ ...s, currentOperand: num, overwrite: false }));
+        return;
+    }
+    if (state.currentOperand === "0" && num === "0") return;
+    if (state.currentOperand.replace(",", "").length >= 15) return;
+    setState(s => ({ ...s, currentOperand: s.currentOperand === "0" ? num : s.currentOperand + num}));
   };
   
   const handleBackspace = () => {
-    setInputValue((prev) => (prev.length > 1 ? prev.slice(0, -1) : "0"));
+    if (state.overwrite) {
+        setState({ ...INITIAL_STATE });
+        return;
+    }
+    if (state.currentOperand.length === 1) {
+        setState(s => ({ ...s, currentOperand: "0" }));
+        return;
+    }
+    setState(s => ({...s, currentOperand: s.currentOperand.slice(0, -1) }));
   };
 
   const handleDecimalPress = () => {
-    if (inputValue.includes(",")) return;
-    setInputValue((prev) => prev + ",");
+    if (state.overwrite) {
+        setState(s => ({ ...s, currentOperand: "0,", overwrite: false }));
+        return;
+    }
+    if (state.currentOperand.includes(",")) return;
+    setState(s => ({ ...s, currentOperand: s.currentOperand + "," }));
   };
 
   const handleClear = () => {
-    setInputValue("0");
+    setState(INITIAL_STATE);
     setOutputValue("0");
   };
   
+  const handleOperationPress = (operation: string) => {
+    if (state.previousOperand == null) {
+      setState(s => ({
+        ...s,
+        operation,
+        previousOperand: s.currentOperand,
+        currentOperand: "0"
+      }));
+      return;
+    }
+
+    const result = evaluate(state);
+    const resultStr = isNaN(result) ? "0" : result.toString().replace('.', ',');
+    setState({
+        ...state,
+        previousOperand: resultStr,
+        operation: operation,
+        currentOperand: "0"
+    });
+  };
+  
   const handleEquals = () => {
-    calculateConversion();
+    if (state.operation == null || state.previousOperand == null) {
+        return;
+    }
+    const result = evaluate(state);
+    const resultStr = isNaN(result) ? "0" : result.toString().replace('.', ',');
+    
+    setState({
+      previousOperand: null,
+      operation: null,
+      currentOperand: resultStr,
+      overwrite: true,
+    });
+    calculateConversion(resultStr);
   };
 
   const handleSwap = () => {
     setDirection((prev) => (prev === "foreign-to-ves" ? "ves-to-foreign" : "foreign-to-ves"));
-    // Swap values
-    const currentInput = inputValue;
+    setState(INITIAL_STATE);
     const currentOutput = outputValue;
   
-    // The new input will be the old output, formatted for input
     let newInputValue = "0";
     if (currentOutput !== "0") {
         const num = parseFloat(currentOutput);
         newInputValue = isNaN(num) ? "0" : num.toString().replace('.', ',');
     }
-    setInputValue(newInputValue);
-  
-    // The new output will be the old input
-    setOutputValue(currentInput.replace(',', '.'));
+    
+    setState(s => ({...s, currentOperand: newInputValue}));
+    setOutputValue(state.currentOperand.replace(',', '.'));
   };
-
-  React.useEffect(() => {
-     if (inputValue === "0") {
-        setOutputValue("0");
-        return;
-    }
-    calculateConversion();
-  }, [inputValue, activeRate, direction, fromCurrency, toCurrency, calculateConversion]);
 
   const handleCurrencyButtonClick = (currency: ForeignCurrency) => {
     setForeignCurrency(currency);
@@ -162,27 +234,27 @@ export default function Home() {
     { label: "7", action: () => handleNumberPress("7") },
     { label: "8", action: () => handleNumberPress("8") },
     { label: "9", action: () => handleNumberPress("9") },
-    { label: "", action: () => { /* TODO: History */ }, variant: "custom" as const, customColor: "#919191", icon: <History size={28} className="text-black" /> },
+    { label: <History size={28} />, action: () => { /* TODO: History */ }, variant: "custom" as const, customColor: "#919191", icon: <History size={28} className="text-black" /> },
     { label: "4", action: () => handleNumberPress("4") },
     { label: "5", action: () => handleNumberPress("5") },
     { label: "6", action: () => handleNumberPress("6") },
-    { label: "", action: () => { /* TODO */ }, variant: "custom" as const, customColor: "#919191", icon: <LineChart size={28} className="text-black" /> },
+    { label: <LineChart size={28} />, action: () => { /* TODO */ }, variant: "custom" as const, customColor: "#919191", icon: <LineChart size={28} className="text-black" /> },
     { label: "1", action: () => handleNumberPress("1") },
     { label: "2", action: () => handleNumberPress("2") },
     { label: "3", action: () => handleNumberPress("3") },
-    { label: "", action: () => { /* TODO */ }, variant: "custom" as const, customColor: "#919191", icon: <Plus size={28} className="text-black" /> },
+    { label: <Plus size={28} />, action: () => handleOperationPress('+'), variant: "custom" as const, customColor: "#919191", icon: <Plus size={28} className="text-black" /> },
     { label: "C", action: handleClear, variant: "destructive" as const },
     { label: "0", action: () => handleNumberPress("0") },
     { label: ",", action: handleDecimalPress },
     { label: <Equal size={28} />, action: handleEquals, variant: "primary" as const },
   ];
 
-  const DisplayRow = ({ currency, amount }: { currency: string; amount: string | number }) => (
-      <div className="flex justify-between items-baseline">
+  const DisplayRow = ({ currency, amount, isSub = false }: { currency: string; amount: string | number; isSub?: boolean }) => (
+      <div className={cn("flex justify-between items-baseline", isSub && "min-h-[2rem]")}>
           <div className="flex items-center gap-3">
-              <span className="font-bold text-4xl">{currencySymbols[currency as Currency]}</span>
+              <span className={cn("font-bold", isSub ? "text-xl text-muted-foreground" : "text-4xl")}>{currencySymbols[currency as Currency]}</span>
           </div>
-          <p className="font-sans font-normal text-6xl text-right break-all">{formatDisplayValue(amount)}</p>
+          <p className={cn("font-sans font-normal text-right break-all", isSub ? "text-2xl text-muted-foreground" : "text-6xl")}>{formatDisplayValue(amount)}</p>
       </div>
   );
 
@@ -191,7 +263,7 @@ export default function Home() {
       <Button 
         onClick={onClick} 
         variant={active ? 'primary' : 'outline'} 
-        className={cn("h-10 w-16 text-lg font-bold rounded-2xl", active ? "bg-primary" : "border-primary text-primary")}
+        className={cn("h-10 w-16 text-lg font-bold rounded-3xl", active ? "bg-primary" : "border-primary text-primary")}
       >
         {children}
       </Button>
@@ -213,7 +285,10 @@ export default function Home() {
             )}
         </div>
         
-        <DisplayRow currency={fromCurrency} amount={inputValue} />
+        {state.previousOperand && (
+          <DisplayRow currency={fromCurrency} amount={`${formatDisplayValue(state.previousOperand)} ${state.operation}`} isSub />
+        )}
+        <DisplayRow currency={fromCurrency} amount={state.currentOperand} />
 
         <div className="flex items-center justify-between">
           <div className="flex items-center text-2xl gap-2 text-muted-foreground">
@@ -279,15 +354,13 @@ export default function Home() {
                "focus-visible:ring-primary focus-visible:ring-offset-background",
               btn.variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90',
               btn.variant === 'destructive' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-              btn.variant === 'custom' && 'flex-col text-xs',
+              btn.variant === 'custom' && 'flex items-center justify-center text-xs',
               !btn.variant && 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             )}
             style={btn.variant === 'custom' ? { backgroundColor: btn.customColor } : {}}
             size={'icon'}
           >
-            {btn.variant === 'custom' ? btn.icon : null}
-            {typeof btn.label === 'string' && btn.label}
-            {typeof btn.label !== 'string' && btn.variant !== 'custom' ? btn.label : null}
+            {btn.icon ? btn.icon : btn.label}
           </Button>
         ))}
       </div>
