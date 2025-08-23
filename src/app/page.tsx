@@ -152,7 +152,7 @@ export default function Home() {
     { label: "4", action: () => handleNumberPress("4") },
     { label: "5", action: () => handleNumberPress("5") },
     { label: "6", action: () => handleNumberPress("6") },
-    { label: <LineChart size={28} className="text-black" />, action: () => { /* TODO */ }, variant: "custom" as const, customColor: "#919191" },
+    { label: "", action: () => { /* TODO */ }, variant: "custom" as const, customColor: "#919191", icon: <LineChart size={28} className="text-black" /> },
     { label: "1", action: () => handleNumberPress("1") },
     { label: "2", action: () => handleNumberPress("2") },
     { label: "3", action: () => handleNumberPress("3") },
@@ -239,7 +239,7 @@ export default function Home() {
                   </>
                 ) : (
                   <Button onClick={handleBackspace} variant="ghost" size="icon" className="text-primary h-12 w-12">
-                    <Delete size={40} />
+                    <Delete size={32} />
                   </Button>
                 )}
               </div>
