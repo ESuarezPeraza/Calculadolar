@@ -63,7 +63,6 @@ const formatRateDate = (dateString: string) => {
         day: 'numeric',
     }).format(date);
 
-    // Capitalize first letter and remove 'de' between month and year
     const parts = formatted.split(' de ');
     if (parts.length === 3) {
       const capitalized = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
@@ -253,9 +252,9 @@ export default function Home() {
   const MainDisplay = ({ currency, amount }: { currency: string; amount: string | number;}) => (
       <div className="flex justify-between items-baseline">
           <div className="flex items-center gap-3">
-              <span className="font-bold text-base">{currencySymbols[currency as Currency]}</span>
+              <span className="font-bold text-4xl">{currencySymbols[currency as Currency]}</span>
           </div>
-          <p className="font-sans font-normal text-2xl text-right break-all">{formatDisplayValue(amount)}</p>
+          <p className="font-sans font-normal text-5xl text-right break-all">{formatDisplayValue(amount)}</p>
       </div>
   );
   
@@ -273,9 +272,9 @@ export default function Home() {
         <button onClick={handleSwap}>
             <ArrowRightLeft size={16} className="text-primary" />
         </button>
-        <span className="font-sans font-semibold text-base">{currencySymbols[currency as Currency]}</span>
+        <span className="font-sans font-semibold text-2xl">{currencySymbols[currency as Currency]}</span>
       </div>
-      <p className="font-sans font-normal text-lg text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
+      <p className="font-sans font-normal text-3xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
     </div>
   );
 
@@ -308,7 +307,9 @@ export default function Home() {
           </div>
         </div>
         
-        <ExpressionDisplay expression={state.expression} />
+        <div className="min-h-[1.25rem]">
+          <ExpressionDisplay expression={state.expression} />
+        </div>
         
         <MainDisplay currency={fromCurrency} amount={state.currentOperand} />
        
