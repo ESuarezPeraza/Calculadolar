@@ -15,15 +15,13 @@ type Currency = ForeignCurrency | "VES";
 type Direction = "foreign-to-ves" | "ves-to-foreign";
 type State = {
   currentOperand: string;
-  previousOperand: string | null;
-  operation: string | null;
+  expression: string;
   overwrite: boolean;
 };
 
 const INITIAL_STATE: State = {
   currentOperand: "0",
-  previousOperand: null,
-  operation: null,
+  expression: "",
   overwrite: false,
 };
 
@@ -65,18 +63,20 @@ const formatRateDate = (dateString: string) => {
   }).format(date);
 };
 
-function evaluate({ currentOperand, previousOperand, operation }: State): number {
-    const prev = parseFloat(previousOperand?.replace(',', '.') ?? '0');
-    const current = parseFloat(currentOperand.replace(',', '.'));
-    if (isNaN(prev) || isNaN(current)) return NaN;
-    let computation = 0;
-    switch (operation) {
-        case "+":
-            computation = prev + current;
-            break;
-    }
-    return computation;
+function evaluate(expression: string): number {
+    if (!expression) return 0;
+    
+    // Replace comma with dot for decimals and split by '+'
+    const values = expression.replace(/,/g, '.').split('+').map(v => v.trim());
+    
+    const sum = values.reduce((acc, value) => {
+        const num = parseFloat(value);
+        return acc + (isNaN(num) ? 0 : num);
+    }, 0);
+
+    return sum;
 }
+
 
 export default function Home() {
   const { toast } = useToast();
@@ -138,14 +138,14 @@ export default function Home() {
   }, [inputValueForConversion, activeRate, direction, fromCurrency, toCurrency, calculateConversion]);
   
   React.useEffect(() => {
-    if (state.operation === null) {
+    if (!state.expression) {
       setInputValueForConversion(state.currentOperand);
     }
-  }, [state.currentOperand, state.operation])
+  }, [state.currentOperand, state.expression])
 
   const handleNumberPress = (num: string) => {
     if (state.overwrite) {
-        setState(s => ({ ...s, currentOperand: num, overwrite: false }));
+        setState({ ...INITIAL_STATE, currentOperand: num, overwrite: false });
         return;
     }
     if (state.currentOperand === "0" && num === "0") return;
@@ -168,7 +168,7 @@ export default function Home() {
 
   const handleDecimalPress = () => {
     if (state.overwrite) {
-        setState(s => ({ ...s, currentOperand: "0,", overwrite: false }));
+        setState({ ...INITIAL_STATE, currentOperand: "0,", overwrite: false });
         return;
     }
     if (state.currentOperand.includes(",")) return;
@@ -181,39 +181,30 @@ export default function Home() {
   };
   
   const handleOperationPress = (operation: string) => {
-     if (state.currentOperand === "0" && state.previousOperand === null) return;
-  
-    if (state.previousOperand == null) {
-      setState(s => ({
-        ...s,
-        operation,
-        previousOperand: s.currentOperand,
-        currentOperand: "0"
-      }));
-      return;
-    }
+    if(state.currentOperand === '0' && state.expression === '') return;
 
-    const result = evaluate(state);
-    const resultStr = isNaN(result) ? "0" : result.toString().replace('.', ',');
-    setState({
-        ...state,
-        previousOperand: resultStr,
-        operation: operation,
-        currentOperand: "0"
-    });
+    const newExpression = state.expression 
+        ? `${state.expression} ${operation} ${state.currentOperand}`
+        : `${state.currentOperand}`;
+
+    setState(s => ({
+      ...s,
+      expression: newExpression,
+      currentOperand: "0"
+    }));
   };
   
   const handleEquals = () => {
-    if (state.operation == null || state.previousOperand == null) {
+    if (!state.expression || state.currentOperand === '0') {
         return;
     }
-    const result = evaluate(state);
+    const finalExpression = `${state.expression} + ${state.currentOperand}`;
+    const result = evaluate(finalExpression);
     const resultStr = isNaN(result) ? "0" : result.toString().replace('.', ',');
     
     setInputValueForConversion(resultStr);
     setState({
-      previousOperand: null,
-      operation: null,
+      ...INITIAL_STATE,
       currentOperand: resultStr,
       overwrite: true,
     });
@@ -256,12 +247,11 @@ export default function Home() {
       </div>
   );
   
-  const SubDisplay = ({ currency, amount, operation }: { currency: string; amount: string | number; operation: string | null;}) => (
-      <div className="flex justify-between items-baseline min-h-[2rem]">
-          <div className="flex items-center gap-3">
-              <span className="font-bold text-xl text-muted-foreground">{currencySymbols[currency as Currency]}</span>
-          </div>
-          <p className="font-sans font-normal text-2xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)} {operation}</p>
+  const ExpressionDisplay = ({ expression }: { expression: string }) => (
+      <div className="flex justify-end items-baseline min-h-[2rem]">
+          <p className="font-sans font-normal text-2xl text-right break-all text-muted-foreground truncate">
+            {expression.replace(/\+/g, ' + ')}
+          </p>
       </div>
   );
 
@@ -282,7 +272,7 @@ export default function Home() {
       <Button 
         onClick={onClick} 
         variant={active ? 'primary' : 'outline'} 
-        className={cn("h-10 w-16 text-lg font-bold rounded-full", active ? "bg-primary" : "border-primary text-primary")}
+        className={cn("h-16 w-16 text-lg font-bold rounded-2xl", active ? "bg-primary" : "border-primary text-primary")}
       >
         {children}
       </Button>
@@ -290,8 +280,7 @@ export default function Home() {
     </div>
   );
   
-  const showSubDisplay = state.previousOperand && state.operation;
-  const isSumResult = state.overwrite && !state.operation;
+  const showExpressionDisplay = state.expression !== "";
 
   return (
     <main className="h-screen max-h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden font-sans">
@@ -307,7 +296,7 @@ export default function Home() {
             )}
         </div>
         
-        {showSubDisplay && !isSumResult && <SubDisplay currency={fromCurrency} amount={state.previousOperand!} operation={state.operation} />}
+        {showExpressionDisplay && <ExpressionDisplay expression={state.expression} />}
         
         <MainDisplay currency={fromCurrency} amount={state.currentOperand} />
        
