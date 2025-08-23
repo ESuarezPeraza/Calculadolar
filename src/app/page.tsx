@@ -206,7 +206,7 @@ export default function Home() {
             <button onClick={handleSwap}>
                 <ArrowRightLeft size={20} className="text-primary" />
             </button>
-            <span className="font-sans font-semibold">{toCurrency}</span>
+            <span className="font-sans font-semibold">{currencySymbols[toCurrency]}</span>
           </div>
           <p className="font-sans font-normal text-4xl text-right break-all text-muted-foreground">{formatDisplayValue(outputValue)}</p>
         </div>
@@ -265,7 +265,6 @@ export default function Home() {
                "focus-visible:ring-primary focus-visible:ring-offset-background",
               btn.variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90',
               btn.variant === 'destructive' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-              btn.variant === 'accent' && 'bg-accent text-accent-foreground hover:bg-accent/90',
               btn.variant === 'custom' && 'flex-col text-xs',
               !btn.variant && 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             )}
