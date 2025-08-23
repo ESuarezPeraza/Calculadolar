@@ -206,7 +206,7 @@ export default function Home() {
   };
   
   const handleEquals = () => {
-    if (!state.expression && state.currentOperand === "0") {
+    if (!state.expression) {
         return;
     }
     
@@ -253,9 +253,9 @@ export default function Home() {
   const MainDisplay = ({ currency, amount }: { currency: string; amount: string | number;}) => (
       <div className="flex justify-between items-baseline">
           <div className="flex items-center gap-3">
-              <span className="font-bold text-lg">{currencySymbols[currency as Currency]}</span>
+              <span className="font-bold text-base">{currencySymbols[currency as Currency]}</span>
           </div>
-          <p className="font-sans font-normal text-3xl text-right break-all">{formatDisplayValue(amount)}</p>
+          <p className="font-sans font-normal text-2xl text-right break-all">{formatDisplayValue(amount)}</p>
       </div>
   );
   
@@ -273,7 +273,7 @@ export default function Home() {
         <button onClick={handleSwap}>
             <ArrowRightLeft size={16} className="text-primary" />
         </button>
-        <span className="font-sans font-semibold">{currencySymbols[currency as Currency]}</span>
+        <span className="font-sans font-semibold text-base">{currencySymbols[currency as Currency]}</span>
       </div>
       <p className="font-sans font-normal text-lg text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
     </div>
@@ -292,11 +292,9 @@ export default function Home() {
     </div>
   );
   
-  const showExpressionDisplay = state.expression !== "";
-
   return (
     <main className="h-screen max-h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden font-sans">
-      <div className="flex-1 flex flex-col justify-end p-6 space-y-4">
+      <div className="flex-1 flex flex-col justify-end p-6 space-y-2">
         <div className="flex justify-between items-center text-sm text-muted-foreground mb-4">
           <div className="text-left capitalize">
             {isLoading ? <Skeleton className="h-4 w-48" /> : formatRateDate(rates?.date ?? '')}
@@ -310,7 +308,7 @@ export default function Home() {
           </div>
         </div>
         
-        {showExpressionDisplay && <ExpressionDisplay expression={state.expression} />}
+        <ExpressionDisplay expression={state.expression} />
         
         <MainDisplay currency={fromCurrency} amount={state.currentOperand} />
        
