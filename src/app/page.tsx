@@ -177,7 +177,7 @@ export default function Home() {
       <Button 
         onClick={onClick} 
         variant={active ? 'primary' : 'outline'} 
-        className={cn("rounded-lg h-12 w-16 text-lg font-bold", active ? "bg-primary" : "border-primary text-primary")}
+        className={cn("rounded-2xl h-12 w-16 text-lg font-bold", active ? "bg-primary" : "border-primary text-primary")}
       >
         {children}
       </Button>
