@@ -34,7 +34,8 @@ const currencySymbols: Record<Currency, string> = {
 
 const formatValue = (value: string | number) => {
   const num = typeof value === "string" ? parseFloat(value.replace(",", ".")) : value;
-  if (isNaN(num)) return "0";
+  if (isNaN(num)) return "0,00";
+  if (num === 0) return "0";
   return new Intl.NumberFormat("de-DE", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -55,7 +56,7 @@ const formatDisplayValue = (value: string | number) => {
 
 const formatRateDate = (dateString: string) => {
     if (!dateString) return "";
-    const date = new Date(`${dateString}T00:00:00`); // Ensure correct parsing
+    const date = new Date(`${dateString}T00:00:00`); 
     const formatted = new Intl.DateTimeFormat('es-ES', {
         weekday: 'long',
         year: 'numeric',
@@ -63,12 +64,6 @@ const formatRateDate = (dateString: string) => {
         day: 'numeric',
     }).format(date);
 
-    const parts = formatted.split(' de ');
-    if (parts.length === 3) {
-      const capitalized = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-      return `${capitalized}, ${parts[1]} ${parts[2]}`;
-    }
-    
     const finalString = formatted.replace(/ de (\d{4})/, ' $1');
     return finalString.charAt(0).toUpperCase() + finalString.slice(1);
 };
@@ -77,7 +72,6 @@ const formatRateDate = (dateString: string) => {
 function evaluate(expression: string): number {
     if (!expression) return 0;
     
-    // Replace comma with dot for decimals and split by '+'
     const values = expression.replace(/,/g, '.').split('+').map(v => v.trim());
     
     const sum = values.reduce((acc, value) => {
@@ -204,7 +198,7 @@ export default function Home() {
   };
   
   const handleEquals = () => {
-    if (!state.expression && state.currentOperand === "0") {
+    if (!state.expression) {
         return;
     }
 
@@ -380,5 +374,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
