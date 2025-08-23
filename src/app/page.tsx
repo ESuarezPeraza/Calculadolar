@@ -54,15 +54,27 @@ const formatDisplayValue = (value: string | number) => {
 };
 
 const formatRateDate = (dateString: string) => {
-  if (!dateString) return "";
-  const date = new Date(`${dateString}T00:00:00`); // Ensure correct parsing
-  return new Intl.DateTimeFormat('es-ES', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
+    if (!dateString) return "";
+    const date = new Date(`${dateString}T00:00:00`); // Ensure correct parsing
+    const formatted = new Intl.DateTimeFormat('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    }).format(date);
+
+    // Capitalize first letter and remove 'de' between month and year
+    const parts = formatted.split(' de ');
+    if (parts.length === 3) {
+      const capitalized = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+      return `${capitalized}, ${parts[1]} ${parts[2]}`;
+    }
+    
+    // Fallback for different structures
+    const finalString = formatted.replace(/ de (\d{4})/, ' $1');
+    return finalString.charAt(0).toUpperCase() + finalString.slice(1);
 };
+
 
 function evaluate(expression: string): number {
     if (!expression) return 0;
@@ -196,11 +208,11 @@ export default function Home() {
   };
   
   const handleEquals = () => {
-    if (!state.expression) {
+    if (!state.expression && state.currentOperand === "0") {
         return;
     }
 
-    const finalExpression = `${state.expression} + ${state.currentOperand}`;
+    const finalExpression = state.expression ? `${state.expression} + ${state.currentOperand}` : state.currentOperand;
     const result = evaluate(finalExpression);
     const resultStr = isNaN(result) ? "0" : result.toString().replace('.', ',');
     
@@ -243,15 +255,15 @@ export default function Home() {
   const MainDisplay = ({ currency, amount }: { currency: string; amount: string | number;}) => (
       <div className="flex justify-between items-baseline">
           <div className="flex items-center gap-3">
-              <span className="font-bold text-3xl">{currencySymbols[currency as Currency]}</span>
+              <span className="font-bold text-2xl">{currencySymbols[currency as Currency]}</span>
           </div>
-          <p className="font-sans font-normal text-5xl text-right break-all">{formatDisplayValue(amount)}</p>
+          <p className="font-sans font-normal text-4xl text-right break-all">{formatDisplayValue(amount)}</p>
       </div>
   );
   
   const ExpressionDisplay = ({ expression }: { expression: string }) => (
-      <div className="flex justify-end items-baseline min-h-[1.75rem]">
-          <p className="font-sans font-normal text-xl text-right break-all text-muted-foreground truncate">
+      <div className="flex justify-end items-baseline min-h-[1.5rem]">
+          <p className="font-sans font-normal text-lg text-right break-all text-muted-foreground truncate">
             {expression.replace(/\+/g, ' + ')}
           </p>
       </div>
@@ -259,13 +271,13 @@ export default function Home() {
 
   const ConversionResultDisplay = ({ currency, amount}: { currency: string; amount: string | number}) => (
     <div className="flex items-center justify-between">
-      <div className="flex items-center text-xl gap-2 text-muted-foreground">
+      <div className="flex items-center text-lg gap-2 text-muted-foreground">
         <button onClick={handleSwap}>
-            <ArrowRightLeft size={18} className="text-primary" />
+            <ArrowRightLeft size={16} className="text-primary" />
         </button>
         <span className="font-sans font-semibold">{currencySymbols[currency as Currency]}</span>
       </div>
-      <p className="font-sans font-normal text-3xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
+      <p className="font-sans font-normal text-2xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
     </div>
   );
 
@@ -287,12 +299,12 @@ export default function Home() {
   return (
     <main className="h-screen max-h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden font-sans">
       <div className="flex-1 flex flex-col justify-end p-6 space-y-4">
-        <div className="text-sm text-muted-foreground mb-1">
-          {isLoading ? <Skeleton className="h-4 w-48" /> : `Fecha Valor: ${formatRateDate(rates?.date ?? '')}`}
+        <div className="text-sm text-muted-foreground mb-1 text-right capitalize">
+          {isLoading ? <Skeleton className="h-4 w-48 ml-auto" /> : formatRateDate(rates?.date ?? '')}
         </div>
-        <div className="text-sm text-muted-foreground mb-4">
+        <div className="text-sm text-muted-foreground mb-4 text-right">
             {isLoading ? (
-              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-32 ml-auto" />
             ) : (
               `1 ${isCustomRateActive ? 'Tasa' : foreignCurrency} = ${formatValue(activeRate)} Bs`
             )}
@@ -372,5 +384,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
