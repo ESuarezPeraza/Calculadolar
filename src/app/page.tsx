@@ -177,7 +177,7 @@ export default function Home() {
       <Button 
         onClick={onClick} 
         variant={active ? 'primary' : 'outline'} 
-        className={cn("rounded-full h-12 w-12 p-0 text-lg font-bold", active ? "bg-primary" : "border-primary text-primary")}
+        className={cn("rounded-lg h-12 w-16 text-lg font-bold", active ? "bg-primary" : "border-primary text-primary")}
       >
         {children}
       </Button>
@@ -191,12 +191,12 @@ export default function Home() {
         <div className="text-sm text-muted-foreground mb-1">
           {isLoading ? <Skeleton className="h-4 w-48" /> : `Fecha Valor: ${formatRateDate(rates?.date ?? '')}`}
         </div>
-         <div className="text-sm text-muted-foreground mb-4">
-          {isLoading ? (
-            <Skeleton className="h-4 w-32" />
-          ) : (
-            `1 ${isCustomRateActive ? 'Tasa' : foreignCurrency} = ${formatValue(activeRate)} Bs`
-          )}
+        <div className="text-sm text-muted-foreground mb-4">
+            {isLoading ? (
+              <Skeleton className="h-4 w-32" />
+            ) : (
+              `1 ${isCustomRateActive ? 'Tasa' : foreignCurrency} = ${formatValue(activeRate)} Bs`
+            )}
         </div>
         
         <DisplayRow currency={fromCurrency} amount={inputValue} />
@@ -246,7 +246,7 @@ export default function Home() {
                   </>
                 ) : (
                   <Button onClick={handleBackspace} variant="ghost" size="icon" className="h-12 w-12 text-primary/50 hover:text-primary">
-                    <Delete size={40} strokeWidth={1.5} />
+                    <Delete size={32} strokeWidth={1.5} />
                   </Button>
                 )}
               </div>
