@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -272,7 +273,7 @@ export default function Home() {
       <Button 
         onClick={onClick} 
         variant={active ? 'primary' : 'outline'} 
-        className={cn("h-16 w-16 text-lg font-bold rounded-2xl", active ? "bg-primary" : "border-primary text-primary")}
+        className={cn("h-10 w-16 text-lg font-bold rounded-3xl", active ? "bg-primary" : "border-primary text-primary")}
       >
         {children}
       </Button>
@@ -370,3 +371,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
