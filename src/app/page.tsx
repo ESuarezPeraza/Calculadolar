@@ -152,7 +152,7 @@ export default function Home() {
     { label: "4", action: () => handleNumberPress("4") },
     { label: "5", action: () => handleNumberPress("5") },
     { label: "6", action: () => handleNumberPress("6") },
-    { label: <LineChart size={28} />, action: () => { /* TODO */ }, variant: "accent" as const },
+    { label: <LineChart size={28} className="text-black" />, action: () => { /* TODO */ }, variant: "custom" as const, customColor: "#919191" },
     { label: "1", action: () => handleNumberPress("1") },
     { label: "2", action: () => handleNumberPress("2") },
     { label: "3", action: () => handleNumberPress("3") },
@@ -273,5 +273,4 @@ export default function Home() {
       </div>
     </main>
   );
-
-    
+}
