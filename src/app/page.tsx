@@ -195,7 +195,7 @@ export default function Home() {
           {isLoading ? (
             <Skeleton className="h-4 w-32" />
           ) : (
-            `1 ${isCustomRateActive ? 'Tasa' : foreignCurrency} = ${formatValue(activeRate)} VES`
+            `1 ${isCustomRateActive ? 'Tasa' : foreignCurrency} = ${formatValue(activeRate)} Bs`
           )}
         </div>
         
