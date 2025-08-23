@@ -196,9 +196,10 @@ export default function Home() {
   };
   
   const handleEquals = () => {
-    if (!state.expression || state.currentOperand === '0') {
+    if (!state.expression) {
         return;
     }
+
     const finalExpression = `${state.expression} + ${state.currentOperand}`;
     const result = evaluate(finalExpression);
     const resultStr = isNaN(result) ? "0" : result.toString().replace('.', ',');
@@ -371,5 +372,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
