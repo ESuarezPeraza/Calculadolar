@@ -196,9 +196,7 @@ export default function Home() {
   const handleOperationPress = (operation: string) => {
     if(state.currentOperand === '0' && state.expression === '') return;
 
-    const newExpression = state.expression 
-        ? `${state.expression} ${state.currentOperand} ${operation}`
-        : `${state.currentOperand} ${operation}`;
+    const newExpression = `${state.expression}${state.currentOperand} ${operation} `;
 
     setState(s => ({
       ...s,
@@ -208,11 +206,11 @@ export default function Home() {
   };
   
   const handleEquals = () => {
-    if (!state.expression) {
+    if (!state.expression && state.currentOperand === "0") {
         return;
     }
-
-    const finalExpression = `${state.expression} ${state.currentOperand}`;
+    
+    const finalExpression = `${state.expression}${state.currentOperand}`;
     const result = evaluate(finalExpression);
     const resultStr = isNaN(result) ? "0" : result.toString().replace('.', ',');
     
@@ -255,7 +253,7 @@ export default function Home() {
   const MainDisplay = ({ currency, amount }: { currency: string; amount: string | number;}) => (
       <div className="flex justify-between items-baseline">
           <div className="flex items-center gap-3">
-              <span className="font-bold text-xl">{currencySymbols[currency as Currency]}</span>
+              <span className="font-bold text-lg">{currencySymbols[currency as Currency]}</span>
           </div>
           <p className="font-sans font-normal text-3xl text-right break-all">{formatDisplayValue(amount)}</p>
       </div>
@@ -263,7 +261,7 @@ export default function Home() {
   
   const ExpressionDisplay = ({ expression }: { expression: string }) => (
       <div className="flex justify-end items-baseline min-h-[1.25rem]">
-          <p className="font-sans font-normal text-base text-right break-all text-muted-foreground truncate">
+          <p className="font-sans font-normal text-sm text-right break-all text-muted-foreground truncate">
             {expression.replace(/\+/g, ' + ')}
           </p>
       </div>
@@ -271,13 +269,13 @@ export default function Home() {
 
   const ConversionResultDisplay = ({ currency, amount}: { currency: string; amount: string | number}) => (
     <div className="flex items-center justify-between">
-      <div className="flex items-center text-base gap-2 text-muted-foreground">
+      <div className="flex items-center text-sm gap-2 text-muted-foreground">
         <button onClick={handleSwap}>
             <ArrowRightLeft size={16} className="text-primary" />
         </button>
         <span className="font-sans font-semibold">{currencySymbols[currency as Currency]}</span>
       </div>
-      <p className="font-sans font-normal text-xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
+      <p className="font-sans font-normal text-lg text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
     </div>
   );
 
@@ -299,15 +297,17 @@ export default function Home() {
   return (
     <main className="h-screen max-h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden font-sans">
       <div className="flex-1 flex flex-col justify-end p-6 space-y-4">
-        <div className="text-sm text-muted-foreground mb-1 text-left capitalize">
-          {isLoading ? <Skeleton className="h-4 w-48" /> : formatRateDate(rates?.date ?? '')}
-        </div>
-        <div className="text-sm text-muted-foreground mb-4 text-right">
-            {isLoading ? (
-              <Skeleton className="h-4 w-32 ml-auto" />
-            ) : (
-              `1 ${isCustomRateActive ? 'Tasa' : foreignCurrency} = ${formatValue(activeRate)} Bs`
-            )}
+        <div className="flex justify-between items-center text-sm text-muted-foreground mb-4">
+          <div className="text-left capitalize">
+            {isLoading ? <Skeleton className="h-4 w-48" /> : formatRateDate(rates?.date ?? '')}
+          </div>
+          <div className="text-right">
+              {isLoading ? (
+                <Skeleton className="h-4 w-32" />
+              ) : (
+                `1 ${isCustomRateActive ? 'Tasa' : foreignCurrency} = ${formatValue(activeRate)} Bs`
+              )}
+          </div>
         </div>
         
         {showExpressionDisplay && <ExpressionDisplay expression={state.expression} />}
