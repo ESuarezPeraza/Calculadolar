@@ -188,8 +188,15 @@ export default function Home() {
   return (
     <main className="h-screen max-h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden font-sans">
       <div className="flex-1 flex flex-col justify-end p-6 space-y-4">
-        <div className="text-sm text-muted-foreground mb-4">
+        <div className="text-sm text-muted-foreground mb-1">
           {isLoading ? <Skeleton className="h-4 w-48" /> : `Fecha Valor: ${formatRateDate(rates?.date ?? '')}`}
+        </div>
+         <div className="text-sm text-muted-foreground mb-4">
+          {isLoading ? (
+            <Skeleton className="h-4 w-32" />
+          ) : (
+            `1 ${isCustomRateActive ? 'Tasa' : foreignCurrency} = ${formatValue(activeRate)} VES`
+          )}
         </div>
         
         <DisplayRow currency={fromCurrency} amount={inputValue} />
