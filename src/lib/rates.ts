@@ -15,8 +15,8 @@ export const getExchangeRates = async (): Promise<ExchangeRateData> => {
       const formattedDate = new Intl.DateTimeFormat('en-CA').format(date); // YYYY-MM-DD
       resolve({
         rates: {
-          USD: 36.53,
-          EUR: 39.28,
+          USD: 140,
+          EUR: 151.2,
         },
         date: formattedDate,
       });
