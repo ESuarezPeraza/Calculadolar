@@ -9,6 +9,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { HistoryChart } from "@/components/ui/history-chart";
+import { triggerHapticFeedback } from "@/lib/haptics";
 
 type ForeignCurrency = "USD" | "EUR";
 type Currency = ForeignCurrency | "VES";
@@ -95,6 +98,11 @@ export default function Home() {
   const [isCustomRateActive, setIsCustomRateActive] = React.useState(false);
   const [customRate, setCustomRate] = React.useState("");
   const [inputValueForConversion, setInputValueForConversion] = React.useState("0");
+  const [animationError, setAnimationError] = React.useState(false);
+  const [isSwapping, setIsSwapping] = React.useState(false);
+  const [history, setHistory] = React.useState<string[]>([]);
+  const [isHistoryOpen, setIsHistoryOpen] = React.useState(false);
+  const [isChartOpen, setIsChartOpen] = React.useState(false);
 
   React.useEffect(() => {
     const fetchRates = async () => {
@@ -147,16 +155,21 @@ export default function Home() {
   }, [state.currentOperand, state.expression])
 
   const handleNumberPress = (num: string) => {
+    triggerHapticFeedback();
     if (state.overwrite) {
         setState({ ...INITIAL_STATE, currentOperand: num, overwrite: false });
         return;
     }
     if (state.currentOperand === "0" && num === "0") return;
-    if (state.currentOperand.replace(",", "").length >= 15) return;
+    if (state.currentOperand.replace(",", "").length >= 15) {
+      triggerErrorAnimation();
+      return;
+    }
     setState(s => ({ ...s, currentOperand: s.currentOperand === "0" ? num : s.currentOperand + num}));
   };
   
   const handleBackspace = () => {
+    triggerHapticFeedback();
     if (state.overwrite) {
         setState({ ...INITIAL_STATE });
         setInputValueForConversion("0");
@@ -170,21 +183,30 @@ export default function Home() {
   };
 
   const handleDecimalPress = () => {
+    triggerHapticFeedback();
     if (state.overwrite) {
         setState({ ...INITIAL_STATE, currentOperand: "0,", overwrite: false });
         return;
     }
-    if (state.currentOperand.includes(",")) return;
+    if (state.currentOperand.includes(",")) {
+      triggerErrorAnimation();
+      return;
+    }
     setState(s => ({ ...s, currentOperand: s.currentOperand + "," }));
   };
 
   const handleClear = () => {
+    triggerHapticFeedback([50, 50, 50]);
     setState(INITIAL_STATE);
     setInputValueForConversion("0");
   };
   
   const handleOperationPress = (operation: string) => {
-    if(state.currentOperand === '0' && state.expression === '') return;
+    triggerHapticFeedback();
+    if(state.currentOperand === '0' && state.expression === '') {
+      triggerErrorAnimation();
+      return;
+    }
 
     const newExpression = `${state.expression}${state.currentOperand} ${operation} `;
 
@@ -196,11 +218,17 @@ export default function Home() {
   };
   
   const handleEquals = () => {
-    if (!state.expression && state.currentOperand === "0") return;
+    triggerHapticFeedback();
+    if (!state.expression && state.currentOperand === "0") {
+      triggerErrorAnimation();
+      return;
+    }
     
     const finalExpression = `${state.expression}${state.currentOperand}`;
     const result = evaluate(finalExpression);
     const resultStr = isNaN(result) ? "0" : result.toString().replace('.', ',');
+
+    setHistory(prevHistory => [...prevHistory, `${finalExpression} = ${resultStr}`]);
     
     setInputValueForConversion(resultStr);
     setState({
@@ -211,35 +239,55 @@ export default function Home() {
   };
 
   const handleSwap = () => {
-    setDirection((prev) => (prev === "foreign-to-ves" ? "ves-to-foreign" : "foreign-to-ves"));
+    triggerHapticFeedback();
+    setIsSwapping(true);
+    setTimeout(() => {
+      setDirection((prev) => (prev === "foreign-to-ves" ? "ves-to-foreign" : "foreign-to-ves"));
+      setIsSwapping(false);
+    }, 200);
+  };
+
+  const triggerErrorAnimation = () => {
+    setAnimationError(true);
+    triggerHapticFeedback([100, 50, 100]);
+    setTimeout(() => setAnimationError(false), 500);
   };
 
   const handleCurrencyButtonClick = (currency: ForeignCurrency) => {
+    triggerHapticFeedback();
     setForeignCurrency(currency);
     setIsCustomRateActive(false);
   }
   
-  const keypadButtons = [
+  type KeypadButton = {
+  label: React.ReactNode;
+  action: () => void;
+  variant?: "ghost" | "destructive" | "primary" | "secondary";
+  className?: string;
+  "aria-label"?: string;
+};
+
+const keypadButtons: KeypadButton[] = [
     { label: "7", action: () => handleNumberPress("7") },
     { label: "8", action: () => handleNumberPress("8") },
     { label: "9", action: () => handleNumberPress("9") },
-    { label: <History size={20} />, action: () => { /* TODO: History */ }, variant: "ghost" as const, className: "text-muted-foreground hover:text-foreground" },
+    { label: <History size={20} />, action: () => setIsHistoryOpen(true), variant: "ghost" as const, className: "text-muted-foreground hover:text-foreground", "aria-label": "Ver historial de cálculos" },
     { label: "4", action: () => handleNumberPress("4") },
     { label: "5", action: () => handleNumberPress("5") },
     { label: "6", action: () => handleNumberPress("6") },
-    { label: <LineChart size={20} />, action: () => { /* TODO */ }, variant: "ghost" as const, className: "text-muted-foreground hover:text-foreground" },
+    { label: <LineChart size={20} />, action: () => setIsChartOpen(true), variant: "ghost" as const, className: "text-muted-foreground hover:text-foreground", "aria-label": "Ver gráfico de historial de tasas" },
     { label: "1", action: () => handleNumberPress("1") },
     { label: "2", action: () => handleNumberPress("2") },
     { label: "3", action: () => handleNumberPress("3") },
-    { label: <Plus size={24} />, action: () => handleOperationPress('+'), variant: "ghost" as const, className: "text-muted-foreground hover:text-foreground" },
+    { label: <Plus size={24} />, action: () => handleOperationPress('+'), variant: "ghost" as const, className: "text-muted-foreground hover:text-foreground", "aria-label": "Sumar" },
     { label: "C", action: handleClear, variant: "destructive" as const },
     { label: "0", action: () => handleNumberPress("0") },
     { label: ",", action: handleDecimalPress },
-    { label: <Equal size={24} />, action: handleEquals, variant: "primary" as const },
+    { label: <Equal size={24} />, action: handleEquals, variant: "primary" as const, "aria-label": "Calcular resultado" },
   ];
 
   const MainDisplay = ({ currency, amount }: { currency: string; amount: string | number;}) => (
-      <div className="flex justify-between items-baseline px-1 py-0">
+      <div className={cn("flex justify-between items-baseline px-1 py-0", animationError && "animate-shake")}>
           <div className="flex items-center gap-2">
               <span className="font-normal text-2xl text-muted-foreground/80">{currencySymbols[currency as Currency]}</span>
           </div>
@@ -257,10 +305,11 @@ export default function Home() {
 
   const ConversionResultDisplay = ({ currency, amount}: { currency: string; amount: string | number}) => (
     <div className="flex items-center justify-between px-1 py-1 bg-muted/20 rounded-xl border border-border/50">
-      <div className="flex items-center text-sm gap-2 text-muted-foreground">
+            <div className="flex items-center text-sm gap-2 text-muted-foreground">
         <button 
           onClick={handleSwap}
           className="p-1.5 rounded-full hover:bg-primary/10 transition-colors duration-200"
+          aria-label="Intercambiar divisas"
         >
             <ArrowRightLeft size={16} className="text-primary" />
         </button>
@@ -302,7 +351,7 @@ export default function Home() {
       </div>
 
       {/* Display area */}
-      <div className="flex-1 flex flex-col justify-end px-4 space-y-1 py-1">
+      <div className={cn("flex-1 flex flex-col justify-end px-4 space-y-1 py-1 transition-opacity duration-200", isSwapping ? "opacity-0" : "opacity-100")}>
         <ExpressionDisplay expression={state.expression} />
         
         <div className="bg-card/50 rounded-2xl p-2 border border-border/30 backdrop-blur-sm">
@@ -323,7 +372,7 @@ export default function Home() {
                       €
                   </CurrencyButton>
                   <CurrencyButton onClick={() => setIsCustomRateActive(true)} active={isCustomRateActive} label="CUSTOM">
-                      <Pencil size={18} />
+                      <Pencil size={18} aria-label="Editar tasa de cambio personalizada" />
                   </CurrencyButton>
               </div>
               <div className="flex-1 relative flex justify-end">
@@ -340,7 +389,7 @@ export default function Home() {
                       className="bg-transparent border-0 border-b-2 border-primary rounded-none px-0 text-sm text-right focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-24 font-normal"
                     />
                     {customRate && (
-                       <Button onClick={() => setCustomRate("")} variant="ghost" size="icon" className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground">
+                       <Button onClick={() => setCustomRate("")} variant="ghost" size="icon" className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground" aria-label="Borrar tasa de cambio personalizada">
                           <X size={16}/>
                        </Button>
                     )}
@@ -351,6 +400,7 @@ export default function Home() {
                     variant="ghost" 
                     size="icon" 
                     className="h-10 w-10 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl transition-all duration-200"
+                    aria-label="Borrar último caracter"
                   >
                     <Delete size={22} strokeWidth={1.5} />
                   </Button>
@@ -377,11 +427,42 @@ export default function Home() {
               btn.className
             )}
             size={'icon'}
+            aria-label={btn["aria-label"]}
           >
             {btn.label}
           </Button>
         ))}
       </div>
+
+      <Sheet open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Historial de Cálculos</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 space-y-2">
+            {history.length > 0 ? (
+              history.map((item, index) => (
+                <div key={index} className="p-2 bg-muted/50 rounded-lg">
+                  {item}
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground">No hay historial de cálculos.</p>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={isChartOpen} onOpenChange={setIsChartOpen}>
+        <SheetContent className="min-w-[80vw]">
+          <SheetHeader>
+            <SheetTitle>Historial de Tasa de Cambio (Últimos 30 días)</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
+            <HistoryChart currency={foreignCurrency} />
+          </div>
+        </SheetContent>
+      </Sheet>
     </main>
   );
 }
