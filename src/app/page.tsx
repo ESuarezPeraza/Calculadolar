@@ -43,6 +43,9 @@ const formatValue = (value: string | number) => {
 
 const formatDisplayValue = (value: string | number) => {
   let valueStr = typeof value === 'string' ? value : value.toString();
+  
+  if (valueStr === "0") return "0";
+
   valueStr = valueStr.replace('.', ',');
 
   const parts = valueStr.split(',');
@@ -194,9 +197,9 @@ export default function Home() {
   
   const handleEquals = () => {
     if (!state.expression) {
-        return;
+      return;
     }
-
+    
     const finalExpression = `${state.expression}${state.currentOperand}`;
     const result = evaluate(finalExpression);
     const resultStr = isNaN(result) ? "0" : result.toString().replace('.', ',');
@@ -240,9 +243,9 @@ export default function Home() {
   const MainDisplay = ({ currency, amount }: { currency: string; amount: string | number;}) => (
       <div className="flex justify-between items-baseline px-1 py-2">
           <div className="flex items-center gap-4">
-              <span className="font-medium text-5xl text-muted-foreground/80">{currencySymbols[currency as Currency]}</span>
+              <span className="font-normal text-5xl text-muted-foreground/80">{currencySymbols[currency as Currency]}</span>
           </div>
-          <p className="font-sans font-medium text-6xl text-right break-all leading-tight">{formatDisplayValue(amount)}</p>
+          <p className="font-sans font-normal text-6xl text-right break-all leading-tight">{formatDisplayValue(amount)}</p>
       </div>
   );
   
@@ -263,19 +266,19 @@ export default function Home() {
         >
             <ArrowRightLeft size={18} className="text-primary" />
         </button>
-        <span className="font-sans font-medium text-2xl">{currencySymbols[currency as Currency]}</span>
+        <span className="font-sans font-normal text-2xl">{currencySymbols[currency as Currency]}</span>
       </div>
-      <p className="font-sans font-medium text-3xl text-right break-all text-muted-foreground pr-2">{formatDisplayValue(amount)}</p>
+      <p className="font-sans font-normal text-3xl text-right break-all text-muted-foreground pr-2">{formatDisplayValue(amount)}</p>
     </div>
   );
 
   const CurrencyButton = ({ active, label, children, onClick }: {active: boolean, label: string, children: React.ReactNode, onClick: () => void}) => (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-2">
       <Button 
         onClick={onClick} 
         variant={active ? 'primary' : 'outline'} 
         className={cn(
-          "h-12 w-20 text-lg font-medium rounded-2xl transition-all duration-200 transform hover:scale-105", 
+          "h-10 w-16 text-lg font-normal rounded-3xl transition-all duration-200 transform hover:scale-105", 
           active 
             ? "bg-primary shadow-lg shadow-primary/25" 
             : "border-2 border-primary/30 text-primary hover:border-primary hover:bg-primary/5"
@@ -283,19 +286,19 @@ export default function Home() {
       >
         {children}
       </Button>
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <span className="text-xs font-normal text-muted-foreground">{label}</span>
     </div>
   );
   
   return (
     <main className="h-screen max-h-screen w-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20 text-foreground overflow-hidden font-sans">
       {/* Header with exchange rate info */}
-      <div className="px-6 pt-8 pb-4">
-        <div className="flex justify-between items-center text-sm text-muted-foreground/80 mb-6 bg-muted/30 rounded-xl p-4 border border-border/30">
-          <div className="text-left capitalize font-medium">
+      <div className="px-6 pt-6 pb-2">
+        <div className="flex justify-between items-center text-sm text-muted-foreground/80 mb-2 bg-muted/30 rounded-xl p-3 border border-border/30">
+          <div className="text-left capitalize font-normal">
             {isLoading ? <Skeleton className="h-4 w-48 bg-muted-foreground/20" /> : formatRateDate(rates?.date ?? '')}
           </div>
-          <div className="text-right font-medium">
+          <div className="text-right font-normal">
               {isLoading ? (
                 <Skeleton className="h-4 w-32 bg-muted-foreground/20" />
               ) : (
@@ -306,7 +309,7 @@ export default function Home() {
       </div>
 
       {/* Display area */}
-      <div className="flex-1 flex flex-col justify-end px-6 space-y-4">
+      <div className="flex-1 flex flex-col justify-end px-6 space-y-2">
         <ExpressionDisplay expression={state.expression} />
         
         <div className="bg-card/50 rounded-2xl p-4 border border-border/30 backdrop-blur-sm">
@@ -317,7 +320,7 @@ export default function Home() {
       </div>
 
       {/* Currency selection and controls */}
-      <div className="px-6 py-6 space-y-4">
+      <div className="px-6 py-4 space-y-4">
           <div className="flex justify-between items-center space-x-6">
               <div className="flex items-center space-x-6">
                   <CurrencyButton onClick={() => handleCurrencyButtonClick("USD")} active={foreignCurrency === 'USD' && !isCustomRateActive} label="USD">
@@ -341,7 +344,7 @@ export default function Home() {
                         const value = e.target.value.replace(/[^0-9,.]/g, '');
                         setCustomRate(value);
                       }}
-                      className="bg-transparent border-0 border-b-2 border-primary rounded-none px-0 text-lg text-right focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-32 font-medium"
+                      className="bg-transparent border-0 border-b-2 border-primary rounded-none px-0 text-lg text-right focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-32 font-normal"
                     />
                     {customRate && (
                        <Button onClick={() => setCustomRate("")} variant="ghost" size="icon" className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground">
@@ -365,14 +368,14 @@ export default function Home() {
       </div>
 
       {/* Keypad */}
-      <div className="grid grid-cols-4 gap-4 p-6 pt-2">
+      <div className="grid grid-cols-4 gap-4 p-6 pt-0">
         {keypadButtons.map((btn, i) => (
           <Button
             key={i}
             onClick={btn.action}
             variant={btn.variant || "secondary"}
             className={cn(
-              "h-16 w-full text-2xl font-medium rounded-2xl aspect-square transition-all duration-200 transform hover:scale-105 active:scale-95",
+              "h-16 w-full text-2xl font-normal rounded-2xl aspect-square transition-all duration-200 transform hover:scale-105 active:scale-95",
               "focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               btn.variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25',
               btn.variant === 'destructive' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/25',
