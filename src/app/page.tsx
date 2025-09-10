@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { HistoryChart } from "@/components/ui/history-chart";
+const HistoryChart = React.lazy(() => import('@/components/ui/history-chart').then(module => ({ default: module.HistoryChart })));
 import { triggerHapticFeedback } from "@/lib/haptics";
 
 type ForeignCurrency = "USD" | "EUR";
@@ -459,7 +459,9 @@ const keypadButtons: KeypadButton[] = [
             <SheetTitle>Historial de Tasa de Cambio (Últimos 30 días)</SheetTitle>
           </SheetHeader>
           <div className="mt-4">
-            <HistoryChart currency={foreignCurrency} />
+            <React.Suspense fallback={<Skeleton className="h-[400px] w-full bg-muted-foreground/20" />}>
+              <HistoryChart currency={foreignCurrency} />
+            </React.Suspense>
           </div>
         </SheetContent>
       </Sheet>
