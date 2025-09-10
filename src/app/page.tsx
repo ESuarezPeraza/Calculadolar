@@ -196,7 +196,7 @@ export default function Home() {
   };
   
   const handleEquals = () => {
-    if (!state.expression) return;
+    if (!state.expression && state.currentOperand === "0") return;
     
     const finalExpression = `${state.expression}${state.currentOperand}`;
     const result = evaluate(finalExpression);
@@ -231,25 +231,25 @@ export default function Home() {
     { label: "1", action: () => handleNumberPress("1") },
     { label: "2", action: () => handleNumberPress("2") },
     { label: "3", action: () => handleNumberPress("3") },
-    { label: <Plus size={20} />, action: () => handleOperationPress('+'), variant: "ghost" as const, className: "text-muted-foreground hover:text-foreground" },
+    { label: <Plus size={24} />, action: () => handleOperationPress('+'), variant: "ghost" as const, className: "text-muted-foreground hover:text-foreground" },
     { label: "C", action: handleClear, variant: "destructive" as const },
     { label: "0", action: () => handleNumberPress("0") },
     { label: ",", action: handleDecimalPress },
-    { label: <Equal size={20} />, action: handleEquals, variant: "primary" as const },
+    { label: <Equal size={24} />, action: handleEquals, variant: "primary" as const },
   ];
 
   const MainDisplay = ({ currency, amount }: { currency: string; amount: string | number;}) => (
       <div className="flex justify-between items-baseline px-1 py-0">
-          <div className="flex items-center gap-3">
-              <span className="font-normal text-3xl text-muted-foreground/80">{currencySymbols[currency as Currency]}</span>
+          <div className="flex items-center gap-2">
+              <span className="font-normal text-2xl text-muted-foreground/80">{currencySymbols[currency as Currency]}</span>
           </div>
           <p className="font-sans font-normal text-4xl text-right break-all leading-tight">{formatDisplayValue(amount)}</p>
       </div>
   );
   
   const ExpressionDisplay = ({ expression }: { expression: string }) => (
-      <div className="flex justify-end items-baseline min-h-[1.75rem] px-1">
-          <p className="font-sans font-normal text-base text-right break-all text-muted-foreground/70 truncate">
+      <div className="flex justify-end items-baseline min-h-[1.5rem] px-1">
+          <p className="font-sans font-normal text-sm text-right break-all text-muted-foreground/70 truncate">
             {expression.replace(/\+/g, ' + ')}
           </p>
       </div>
@@ -264,9 +264,9 @@ export default function Home() {
         >
             <ArrowRightLeft size={16} className="text-primary" />
         </button>
-        <span className="font-sans font-normal text-lg">{currencySymbols[currency as Currency]}</span>
+        <span className="font-sans font-normal text-base">{currencySymbols[currency as Currency]}</span>
       </div>
-      <p className="font-sans font-normal text-xl text-right break-all text-muted-foreground pr-2">{formatDisplayValue(amount)}</p>
+      <p className="font-sans font-normal text-lg text-right break-all text-muted-foreground pr-2">{formatDisplayValue(amount)}</p>
     </div>
   );
 
@@ -275,12 +275,7 @@ export default function Home() {
       <Button 
         onClick={onClick} 
         variant={active ? 'primary' : 'outline'} 
-        className={cn(
-          "h-10 w-16 text-lg font-normal rounded-3xl transition-all duration-200 transform hover:scale-105", 
-          active 
-            ? "bg-primary shadow-lg shadow-primary/25" 
-            : "border-2 border-primary/30 text-primary hover:border-primary hover:bg-primary/5"
-        )}
+        className={cn("h-10 w-16 text-lg font-normal rounded-3xl", active ? "bg-primary" : "border-primary text-primary")}
       >
         {children}
       </Button>
@@ -291,14 +286,14 @@ export default function Home() {
   return (
     <main className="h-screen max-h-screen w-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20 text-foreground overflow-hidden font-sans">
       {/* Header with exchange rate info */}
-      <div className="px-4 pt-3 pb-1">
-        <div className="flex justify-between items-center text-xs text-muted-foreground/80 bg-muted/30 rounded-xl p-2 border border-border/30">
+      <div className="px-4 pt-3">
+        <div className="flex justify-between items-center text-xs text-muted-foreground/80">
           <div className="text-left capitalize font-normal">
-            {isLoading ? <Skeleton className="h-4 w-48 bg-muted-foreground/20" /> : formatRateDate(rates?.date ?? '')}
+            {isLoading ? <Skeleton className="h-4 w-40 bg-muted-foreground/20" /> : formatRateDate(rates?.date ?? '')}
           </div>
           <div className="text-right font-normal">
               {isLoading ? (
-                <Skeleton className="h-4 w-32 bg-muted-foreground/20" />
+                <Skeleton className="h-4 w-28 bg-muted-foreground/20" />
               ) : (
                 `1 ${isCustomRateActive ? 'Tasa' : foreignCurrency} = ${formatValue(activeRate)} Bs`
               )}
@@ -307,7 +302,7 @@ export default function Home() {
       </div>
 
       {/* Display area */}
-      <div className="flex-1 flex flex-col justify-end px-4 space-y-1">
+      <div className="flex-1 flex flex-col justify-end px-4 space-y-1 py-1">
         <ExpressionDisplay expression={state.expression} />
         
         <div className="bg-card/50 rounded-2xl p-2 border border-border/30 backdrop-blur-sm">
@@ -320,7 +315,7 @@ export default function Home() {
       {/* Currency selection and controls */}
       <div className="px-4 py-2 space-y-2">
           <div className="flex justify-between items-center space-x-4">
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
                   <CurrencyButton onClick={() => handleCurrencyButtonClick("USD")} active={foreignCurrency === 'USD' && !isCustomRateActive} label="USD">
                       $
                   </CurrencyButton>
@@ -328,7 +323,7 @@ export default function Home() {
                       €
                   </CurrencyButton>
                   <CurrencyButton onClick={() => setIsCustomRateActive(true)} active={isCustomRateActive} label="CUSTOM">
-                      <Pencil size={20} />
+                      <Pencil size={18} />
                   </CurrencyButton>
               </div>
               <div className="flex-1 relative flex justify-end">
@@ -342,7 +337,7 @@ export default function Home() {
                         const value = e.target.value.replace(/[^0-9,.]/g, '');
                         setCustomRate(value);
                       }}
-                      className="bg-transparent border-0 border-b-2 border-primary rounded-none px-0 text-base text-right focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-28 font-normal"
+                      className="bg-transparent border-0 border-b-2 border-primary rounded-none px-0 text-sm text-right focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-24 font-normal"
                     />
                     {customRate && (
                        <Button onClick={() => setCustomRate("")} variant="ghost" size="icon" className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground">
@@ -357,23 +352,23 @@ export default function Home() {
                     size="icon" 
                     className="h-10 w-10 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl transition-all duration-200"
                   >
-                    <Delete size={24} strokeWidth={1.5} />
+                    <Delete size={22} strokeWidth={1.5} />
                   </Button>
                 )}
               </div>
           </div>
-           <Separator className="bg-border/30" />
+           <Separator className="bg-border/30 mt-1" />
       </div>
 
       {/* Keypad */}
-      <div className="grid grid-cols-4 gap-2 p-3 pt-0">
+      <div className="grid grid-cols-4 gap-2 px-3 pb-3">
         {keypadButtons.map((btn, i) => (
           <Button
             key={i}
             onClick={btn.action}
             variant={btn.variant || "secondary"}
             className={cn(
-              "h-12 w-full text-xl font-normal rounded-2xl aspect-square transition-all duration-200 transform hover:scale-105 active:scale-95",
+              "h-16 w-full text-2xl font-normal rounded-2xl aspect-square transition-all duration-200 transform hover:scale-105 active:scale-95",
               "focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               btn.variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25',
               btn.variant === 'destructive' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/25',
