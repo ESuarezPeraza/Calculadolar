@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -68,7 +67,6 @@ const formatRateDate = (dateString: string) => {
     return finalString.charAt(0).toUpperCase() + finalString.slice(1);
 };
 
-
 function evaluate(expression: string): number {
     if (!expression) return 0;
     
@@ -82,7 +80,6 @@ function evaluate(expression: string): number {
     return sum;
 }
 
-
 export default function Home() {
   const { toast } = useToast();
   const [rates, setRates] = React.useState<ExchangeRateData | null>(null);
@@ -95,7 +92,6 @@ export default function Home() {
   const [isCustomRateActive, setIsCustomRateActive] = React.useState(false);
   const [customRate, setCustomRate] = React.useState("");
   const [inputValueForConversion, setInputValueForConversion] = React.useState("0");
-
 
   React.useEffect(() => {
     const fetchRates = async () => {
@@ -136,7 +132,6 @@ export default function Home() {
     const result = direction === "foreign-to-ves" ? parsedInput * activeRate : parsedInput / activeRate;
     setOutputValue(formatValue(result.toFixed(2)));
   }, [activeRate, direction]);
-
 
   React.useEffect(() => {
     calculateConversion(inputValueForConversion);
@@ -227,90 +222,104 @@ export default function Home() {
     { label: "7", action: () => handleNumberPress("7") },
     { label: "8", action: () => handleNumberPress("8") },
     { label: "9", action: () => handleNumberPress("9") },
-    { label: <History size={28} />, action: () => { /* TODO: History */ }, variant: "custom" as const, customColor: "#919191", icon: <History size={28} className="text-black" /> },
+    { label: <History size={24} />, action: () => { /* TODO: History */ }, variant: "ghost" as const, className: "text-muted-foreground hover:text-foreground" },
     { label: "4", action: () => handleNumberPress("4") },
     { label: "5", action: () => handleNumberPress("5") },
     { label: "6", action: () => handleNumberPress("6") },
-    { label: <LineChart size={28} />, action: () => { /* TODO */ }, variant: "custom" as const, customColor: "#919191", icon: <LineChart size={28} className="text-black" /> },
+    { label: <LineChart size={24} />, action: () => { /* TODO */ }, variant: "ghost" as const, className: "text-muted-foreground hover:text-foreground" },
     { label: "1", action: () => handleNumberPress("1") },
     { label: "2", action: () => handleNumberPress("2") },
     { label: "3", action: () => handleNumberPress("3") },
-    { label: <Plus size={28} />, action: () => handleOperationPress('+'), variant: "custom" as const, customColor: "#919191", icon: <Plus size={28} className="text-black" /> },
+    { label: <Plus size={24} />, action: () => handleOperationPress('+'), variant: "ghost" as const, className: "text-muted-foreground hover:text-foreground" },
     { label: "C", action: handleClear, variant: "destructive" as const },
     { label: "0", action: () => handleNumberPress("0") },
     { label: ",", action: handleDecimalPress },
-    { label: <Equal size={28} />, action: handleEquals, variant: "primary" as const },
+    { label: <Equal size={24} />, action: handleEquals, variant: "primary" as const },
   ];
 
   const MainDisplay = ({ currency, amount }: { currency: string; amount: string | number;}) => (
-      <div className="flex justify-between items-baseline">
-          <div className="flex items-center gap-3">
-              <span className="font-normal text-4xl">{currencySymbols[currency as Currency]}</span>
+      <div className="flex justify-between items-baseline px-1 py-2">
+          <div className="flex items-center gap-4">
+              <span className="font-medium text-5xl text-muted-foreground/80">{currencySymbols[currency as Currency]}</span>
           </div>
-          <p className="font-sans font-normal text-5xl text-right break-all">{formatDisplayValue(amount)}</p>
+          <p className="font-sans font-medium text-6xl text-right break-all leading-tight">{formatDisplayValue(amount)}</p>
       </div>
   );
   
   const ExpressionDisplay = ({ expression }: { expression: string }) => (
-      <div className="flex justify-end items-baseline min-h-[3rem]">
-          <p className="font-sans font-normal text-xl text-right break-all text-muted-foreground truncate">
+      <div className="flex justify-end items-baseline min-h-[2.5rem] px-1">
+          <p className="font-sans font-normal text-lg text-right break-all text-muted-foreground/70 truncate">
             {expression.replace(/\+/g, ' + ')}
           </p>
       </div>
   );
 
   const ConversionResultDisplay = ({ currency, amount}: { currency: string; amount: string | number}) => (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center text-sm gap-2 text-muted-foreground">
-        <button onClick={handleSwap}>
-            <ArrowRightLeft size={16} className="text-primary" />
+    <div className="flex items-center justify-between px-1 py-3 bg-muted/20 rounded-xl border border-border/50">
+      <div className="flex items-center text-sm gap-3 text-muted-foreground">
+        <button 
+          onClick={handleSwap}
+          className="p-2 rounded-full hover:bg-primary/10 transition-colors duration-200"
+        >
+            <ArrowRightLeft size={18} className="text-primary" />
         </button>
-        <span className="font-sans font-normal text-2xl">{currencySymbols[currency as Currency]}</span>
+        <span className="font-sans font-medium text-2xl">{currencySymbols[currency as Currency]}</span>
       </div>
-      <p className="font-sans font-normal text-3xl text-right break-all text-muted-foreground">{formatDisplayValue(amount)}</p>
+      <p className="font-sans font-medium text-3xl text-right break-all text-muted-foreground pr-2">{formatDisplayValue(amount)}</p>
     </div>
   );
 
   const CurrencyButton = ({ active, label, children, onClick }: {active: boolean, label: string, children: React.ReactNode, onClick: () => void}) => (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-3">
       <Button 
         onClick={onClick} 
         variant={active ? 'primary' : 'outline'} 
-        className={cn("h-10 w-16 text-lg font-normal rounded-3xl", active ? "bg-primary" : "border-primary text-primary")}
+        className={cn(
+          "h-12 w-20 text-lg font-medium rounded-2xl transition-all duration-200 transform hover:scale-105", 
+          active 
+            ? "bg-primary shadow-lg shadow-primary/25" 
+            : "border-2 border-primary/30 text-primary hover:border-primary hover:bg-primary/5"
+        )}
       >
         {children}
       </Button>
-      <span className="text-xs font-normal text-muted-foreground">{label}</span>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
     </div>
   );
   
   return (
-    <main className="h-screen max-h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden font-sans">
-      <div className="flex-1 flex flex-col justify-end p-6 space-y-2">
-        <div className="flex justify-between items-center text-sm text-muted-foreground mb-4">
-          <div className="text-left capitalize">
-            {isLoading ? <Skeleton className="h-4 w-48" /> : formatRateDate(rates?.date ?? '')}
+    <main className="h-screen max-h-screen w-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20 text-foreground overflow-hidden font-sans">
+      {/* Header with exchange rate info */}
+      <div className="px-6 pt-8 pb-4">
+        <div className="flex justify-between items-center text-sm text-muted-foreground/80 mb-6 bg-muted/30 rounded-xl p-4 border border-border/30">
+          <div className="text-left capitalize font-medium">
+            {isLoading ? <Skeleton className="h-4 w-48 bg-muted-foreground/20" /> : formatRateDate(rates?.date ?? '')}
           </div>
-          <div className="text-right">
+          <div className="text-right font-medium">
               {isLoading ? (
-                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-32 bg-muted-foreground/20" />
               ) : (
                 `1 ${isCustomRateActive ? 'Tasa' : foreignCurrency} = ${formatValue(activeRate)} Bs`
               )}
           </div>
         </div>
-        
-        <ExpressionDisplay expression={state.expression} />
-        
-        <MainDisplay currency={fromCurrency} amount={state.currentOperand} />
-       
-        <ConversionResultDisplay currency={toCurrency} amount={outputValue} />
-
       </div>
 
-      <div className="px-6 py-4 space-y-3">
-          <div className="flex justify-between items-center space-x-4">
-              <div className="flex items-center space-x-4">
+      {/* Display area */}
+      <div className="flex-1 flex flex-col justify-end px-6 space-y-4">
+        <ExpressionDisplay expression={state.expression} />
+        
+        <div className="bg-card/50 rounded-2xl p-4 border border-border/30 backdrop-blur-sm">
+          <MainDisplay currency={fromCurrency} amount={state.currentOperand} />
+        </div>
+       
+        <ConversionResultDisplay currency={toCurrency} amount={outputValue} />
+      </div>
+
+      {/* Currency selection and controls */}
+      <div className="px-6 py-6 space-y-4">
+          <div className="flex justify-between items-center space-x-6">
+              <div className="flex items-center space-x-6">
                   <CurrencyButton onClick={() => handleCurrencyButtonClick("USD")} active={foreignCurrency === 'USD' && !isCustomRateActive} label="USD">
                       $
                   </CurrencyButton>
@@ -323,51 +332,57 @@ export default function Home() {
               </div>
               <div className="flex-1 relative flex justify-end">
                 {isCustomRateActive ? (
-                  <>
-                  <Input
-                    type="text"
-                    placeholder={`Tasa`}
-                    value={customRate}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9,.]/g, '');
-                      setCustomRate(value);
-                    }}
-                    className="bg-transparent border-0 border-b-2 border-primary rounded-none px-0 text-lg text-right focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground w-24"
-                  />
-                  {customRate && (
-                     <Button onClick={() => setCustomRate("")} variant="ghost" size="icon" className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground">
-                        <X size={16}/>
-                     </Button>
-                  )}
-                  </>
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Tasa personalizada"
+                      value={customRate}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9,.]/g, '');
+                        setCustomRate(value);
+                      }}
+                      className="bg-transparent border-0 border-b-2 border-primary rounded-none px-0 text-lg text-right focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-32 font-medium"
+                    />
+                    {customRate && (
+                       <Button onClick={() => setCustomRate("")} variant="ghost" size="icon" className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground">
+                          <X size={16}/>
+                       </Button>
+                    )}
+                  </div>
                 ) : (
-                  <Button onClick={handleBackspace} variant="ghost" size="icon" className="h-12 w-12 text-primary/50 hover:text-primary">
-                    <Delete size={32} strokeWidth={1.5} />
+                  <Button 
+                    onClick={handleBackspace} 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-12 w-12 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl transition-all duration-200"
+                  >
+                    <Delete size={28} strokeWidth={1.5} />
                   </Button>
                 )}
               </div>
           </div>
-           <Separator className="bg-border/50" />
+           <Separator className="bg-border/30" />
       </div>
 
-      <div className="grid grid-cols-4 grid-rows-4 gap-3 p-4">
+      {/* Keypad */}
+      <div className="grid grid-cols-4 gap-4 p-6 pt-2">
         {keypadButtons.map((btn, i) => (
           <Button
             key={i}
             onClick={btn.action}
             variant={btn.variant || "secondary"}
             className={cn(
-              "h-20 w-20 text-3xl font-normal rounded-full aspect-square justify-self-center",
-               "focus-visible:ring-primary focus-visible:ring-offset-background",
-              btn.variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90',
-              btn.variant === 'destructive' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-              btn.variant === 'custom' && 'flex items-center justify-center text-xs',
-              !btn.variant && 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              "h-16 w-full text-2xl font-medium rounded-2xl aspect-square transition-all duration-200 transform hover:scale-105 active:scale-95",
+              "focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              btn.variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25',
+              btn.variant === 'destructive' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/25',
+              btn.variant === 'ghost' && 'hover:bg-muted/50',
+              !btn.variant && 'bg-secondary/80 text-secondary-foreground hover:bg-secondary shadow-sm',
+              btn.className
             )}
-            style={btn.variant === 'custom' ? { backgroundColor: btn.customColor } : {}}
             size={'icon'}
           >
-            {btn.icon ? btn.icon : btn.label}
+            {btn.label}
           </Button>
         ))}
       </div>
